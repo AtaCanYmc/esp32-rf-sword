@@ -1,2 +1,2 @@
-platformio>=6.1.15
-esptool>=4.7.0
+platformio>=6.1.19
+esptool>=5.3.1

@@ -15,6 +15,10 @@ updates:
     labels:
       - "dependencies"
       - "github-actions"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   # Maintain Python tooling dependencies (esptool, platformio)
   - package-ecosystem: "pip"
@@ -31,3 +35,7 @@ updates:
     labels:
       - "dependencies"
       - "python"
+    groups:
+      python-dependencies:
+        patterns:
+          - "*"
