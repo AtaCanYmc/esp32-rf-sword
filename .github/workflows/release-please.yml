@@ -1,0 +1,94 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      upload_url: ${{ steps.release.outputs.upload_url }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  build-and-upload-binaries:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env:
+          - esp32-c3-supermini
+          - esp32-devkit-v1
+          - esp32-s3-devkit
+          - esp32-c6-devkit
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: 📦 Install PlatformIO & esptool
+        run: |
+          pip install --upgrade platformio esptool
+
+      - name: 🚀 Build Release Firmware
+        run: |
+          pio run -e ${{ matrix.env }}
+
+      - name: 🧩 Generate Unified Merged Binary (0x0000)
+        run: |
+          python3 scripts/merge_bin.py -e ${{ matrix.env }} -o release_assets
+
+      - name: 🗜️ Copy Partition & Bootloader Binaries
+        run: |
+          cp .pio/build/${{ matrix.env }}/firmware.bin release_assets/esp32-rf-sword-${{ matrix.env }}-firmware.bin
+          cp .pio/build/${{ matrix.env }}/bootloader.bin release_assets/esp32-rf-sword-${{ matrix.env }}-bootloader.bin
+          cp .pio/build/${{ matrix.env }}/partitions.bin release_assets/esp32-rf-sword-${{ matrix.env }}-partitions.bin
+
+      - name: 📤 Upload Artifacts to Job
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-assets-${{ matrix.env }}
+          path: release_assets/*
+
+  attach-assets-to-release:
+    needs: [release-please, build-and-upload-binaries]
+    if: ${{ needs.release-please.outputs.release_created }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Download All Release Assets
+        uses: actions/download-artifact@v4
+        with:
+          path: all_release_assets
+          pattern: release-assets-*
+          merge-multiple: true
+
+      - name: 🛡️ Generate SHA-256 Checksums
+        run: |
+          cd all_release_assets
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: 📤 Attach Binaries to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.release-please.outputs.tag_name }}
+          files: |
+            all_release_assets/*
