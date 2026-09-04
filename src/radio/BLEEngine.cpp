@@ -11,10 +11,23 @@
 #include <string.h>
 
 #ifndef HOST_SIMULATION
+#include <esp_random.h>
+
+#if __has_include(<esp_gap_ble_api.h>)
+#define SWORD_USE_BLUEDROID 1
 #include <esp_bt.h>
 #include <esp_gap_ble_api.h>
 #include <esp_bt_main.h>
-#include <esp_random.h>
+#elif __has_include(<host/ble_gap.h>)
+#define SWORD_USE_NIMBLE 1
+#include <nimble/nimble_port.h>
+#include <nimble/nimble_port_freertos.h>
+#include <host/ble_hs.h>
+#include <host/ble_gap.h>
+#include <host/util/util.h>
+#else
+#define SWORD_NO_BLE 1
+#endif
 #endif
 
 namespace {
@@ -40,7 +53,7 @@ const uint32_t FAST_PAIR_MODELS[] = {
 };
 constexpr size_t FAST_PAIR_COUNT = sizeof(FAST_PAIR_MODELS) / sizeof(FAST_PAIR_MODELS[0]);
 
-#ifndef HOST_SIMULATION
+#if defined(SWORD_USE_BLUEDROID)
 static esp_ble_adv_params_t adv_params = {
     .adv_int_min        = 0x20, // 20ms minimum interval
     .adv_int_max        = 0x40, // 40ms maximum interval
@@ -51,6 +64,44 @@ static esp_ble_adv_params_t adv_params = {
     .channel_map        = ADV_CHNL_ALL,
     .adv_filter_policy  = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,
 };
+
+static void sendRawAdv(const uint8_t* packet, uint8_t length) {
+    esp_ble_gap_config_adv_data_raw(const_cast<uint8_t*>(packet), length);
+    esp_ble_gap_start_advertising(&adv_params);
+}
+
+#elif defined(SWORD_USE_NIMBLE)
+
+static void ble_host_task(void *param) {
+    (void)param;
+    nimble_port_run();
+    nimble_port_freertos_deinit();
+}
+
+static void on_sync(void) {
+    ble_hs_util_ensure_addr(0);
+}
+
+static void sendRawAdv(const uint8_t* packet, uint8_t length) {
+    struct ble_gap_adv_params adv_params;
+    memset(&adv_params, 0, sizeof(adv_params));
+    adv_params.conn_mode = BLE_GAP_CONN_MODE_NON;
+    adv_params.disc_mode = BLE_GAP_DISC_MODE_GEN;
+    adv_params.itvl_min = 0x20;
+    adv_params.itvl_max = 0x40;
+
+    ble_gap_adv_stop();
+    ble_gap_adv_set_data(packet, length);
+    ble_gap_adv_start(BLE_OWN_ADDR_PUBLIC, NULL, BLE_HS_FOREVER, &adv_params, NULL, NULL);
+}
+
+#else
+
+static void sendRawAdv(const uint8_t* packet, uint8_t length) {
+    (void)packet;
+    (void)length;
+}
+
 #endif
 
 } // namespace
@@ -70,11 +121,17 @@ BLEEngine::~BLEEngine() {
 bool BLEEngine::init() {
 #ifndef HOST_SIMULATION
     if (!initialized) {
+#if defined(SWORD_USE_BLUEDROID)
         esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
         esp_bt_controller_init(&bt_cfg);
         esp_bt_controller_enable(ESP_BT_MODE_BLE);
         esp_bluedroid_init();
         esp_bluedroid_enable();
+#elif defined(SWORD_USE_NIMBLE)
+        nimble_port_init();
+        ble_hs_cfg.sync_cb = on_sync;
+        nimble_port_freertos_init(ble_host_task);
+#endif
         initialized = true;
         SWORD_LOGS("BLE", "Native BLE advertising engine initialized.");
     }
@@ -87,12 +144,19 @@ bool BLEEngine::init() {
 void BLEEngine::stop() {
 #ifndef HOST_SIMULATION
     if (initialized) {
+#if defined(SWORD_USE_BLUEDROID)
         esp_ble_gap_stop_advertising();
         esp_bluedroid_disable();
         esp_bluedroid_deinit();
         esp_bt_controller_disable();
         esp_bt_controller_deinit();
+#elif defined(SWORD_USE_NIMBLE)
+        ble_gap_adv_stop();
+        nimble_port_stop();
+        nimble_port_deinit();
+#endif
         initialized = false;
+        SWORD_LOGS("BLE", "Native BLE advertising engine stopped.");
     }
 #endif
 }
@@ -120,8 +184,7 @@ void BLEEngine::sendApplePopup(uint16_t deviceModel) {
         packet[i] = (uint8_t)esp_random();
     }
 
-    esp_ble_gap_config_adv_data_raw(packet, sizeof(packet));
-    esp_ble_gap_start_advertising(&adv_params);
+    sendRawAdv(packet, sizeof(packet));
     SystemState::instance().recordPackets(0, 1);
 #endif
 }
@@ -139,8 +202,7 @@ void BLEEngine::sendGoogleFastPair(uint32_t modelId) {
         (uint8_t)(modelId & 0xFF)
     };
 
-    esp_ble_gap_config_adv_data_raw(packet, sizeof(packet));
-    esp_ble_gap_start_advertising(&adv_params);
+    sendRawAdv(packet, sizeof(packet));
     SystemState::instance().recordPackets(0, 1);
 #endif
 }
@@ -163,8 +225,7 @@ void BLEEngine::sendMicrosoftSwiftPair(const char* displayName) {
     packet[11] = 0x09; // Complete Local Name
     memcpy(&packet[12], displayName, nameLen);
 
-    esp_ble_gap_config_adv_data_raw(packet, 12 + nameLen);
-    esp_ble_gap_start_advertising(&adv_params);
+    sendRawAdv(packet, 12 + nameLen);
     SystemState::instance().recordPackets(0, 1);
 #endif
 }

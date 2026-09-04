@@ -10,18 +10,23 @@ import subprocess
 import argparse
 
 def find_esptool():
-    # 1. Check in PATH
+    # 1. Check PlatformIO penv virtual environment
+    pio_penv_esptool = os.path.expanduser("~/.platformio/penv/bin/esptool.py")
+    if os.path.isfile(pio_penv_esptool) and os.access(pio_penv_esptool, os.X_OK):
+        return [pio_penv_esptool]
+
+    # 2. Check in PATH
     if shutil.which("esptool.py"):
         return ["esptool.py"]
     if shutil.which("esptool"):
         return ["esptool"]
     
-    # 2. Check in PlatformIO tool-esptoolpy
+    # 3. Check in PlatformIO tool-esptoolpy
     pio_esptool = os.path.expanduser("~/.platformio/packages/tool-esptoolpy/esptool.py")
     if os.path.isfile(pio_esptool):
         return [sys.executable, pio_esptool]
 
-    # 3. Fallback to python module
+    # 4. Fallback to python module
     return [sys.executable, "-m", "esptool"]
 
 def merge(env_name, output_dir="dist"):
