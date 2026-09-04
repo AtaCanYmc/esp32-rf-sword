@@ -1,0 +1,37 @@
+# PlatformIO
+.pio
+.pioenvs
+.piolibdeps
+
+# JetBrains / CLion
+.idea/
+cmake-build-*/
+*.iws
+*.iml
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# Build artifacts & Temporary files
+*.o
+*.a
+*.so
+*.dylib
+*.bin
+*.elf
+*.hex
+*.map
+/tmp/*
+
+# Operating System
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env/
