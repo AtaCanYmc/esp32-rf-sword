@@ -11,7 +11,7 @@
 # ESP32-RF-SWORD ⚔️
 
 [![CI Build](https://github.com/your-username/esp32-rf-sword/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/esp32-rf-sword/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/Version-2.5.0_PRO-00f0ff.svg?style=for-the-badge)](https://github.com/your-username/esp32-rf-sword)
+[![Version](https://img.shields.io/badge/Version-0.1.0-00f0ff.svg?style=for-the-badge)](https://github.com/your-username/esp32-rf-sword)
 [![Web Flasher](https://img.shields.io/badge/Web_Flasher-1--Click_Install-FF3366.svg?style=for-the-badge&logo=googlechrome)](flasher/index.html)
 [![Framework](https://img.shields.io/badge/Framework-Arduino_%2F_ESP--IDF-00979D.svg?style=for-the-badge&logo=espressif)](https://espressif.com)
 [![PlatformIO](https://img.shields.io/badge/PlatformIO-Supported-orange.svg?style=for-the-badge&logo=platformio)](https://platformio.org)
@@ -163,7 +163,7 @@ Connect over USB CDC or UART at **115200 baud** for instant terminal access:
  | |____ ____) | |    ___) / /_   | |_) | | |       |______/ \_/\_/  | |__| | | \ \|____/ 
  |______|_____/|_|   |____/____|  |____/|_|                           \______/|_|  \_\     
 
- [ ESP32-RF-SWORD // Multi-Band RF Security & Research Toolkit v2.5.0 ]
+ [ ESP32-RF-SWORD // Multi-Band RF Security & Research Toolkit v0.1.0 ]
  Type 'help' to see available commands or 'status' for real-time telemetry.
 
 sword > status

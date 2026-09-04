@@ -4,7 +4,7 @@ All notable changes to the **ESP32-RF-SWORD** framework will be documented in th
 
 ---
 
-## [2.5.0] - 2026-09-05 (Complete Re-Architecture from RF-KILL)
+## [0.1.0] - 2026-09-05 (Initial Release - Complete Re-Architecture from RF-KILL)
 
 ### Added
 - **Multi-Board Profile Support**:

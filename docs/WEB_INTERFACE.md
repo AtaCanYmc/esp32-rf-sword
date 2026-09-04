@@ -23,7 +23,7 @@ ESP32-RF-SWORD hosts a standalone, responsive cyber-themed Single Page Applicati
 flowchart TD
     subgraph WEB_DASHBOARD ["ESP32-RF-SWORD Cyberpunk Web Portal"]
         subgraph HEADER ["Top Navigation & Status Bar"]
-            BRAND["⚔️ ESP32-RF-SWORD v2.5.0 PRO"]
+            BRAND["⚔️ ESP32-RF-SWORD v0.1.0"]
             STATUS["● WS Status: CONNECTED"]
             UPTIME["⏱️ Uptime Counter"]
         end

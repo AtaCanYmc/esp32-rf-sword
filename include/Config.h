@@ -10,7 +10,7 @@
 #include <stdint.h>
 
 #ifndef SWORD_VERSION
-#define SWORD_VERSION "2.5.0"
+#define SWORD_VERSION "0.1.0"
 #endif
 
 #define SWORD_PROJECT_NAME "ESP32-RF-SWORD"

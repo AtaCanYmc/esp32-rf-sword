@@ -71,7 +71,7 @@ void DisplayManager::showBootLogo() {
     display->setCursor(18, 12);
     display->println("ESP32-RF-SWORD");
     display->setCursor(30, 26);
-    display->println("v2.5.0 PRO");
+    display->println("v0.1.0");
     display->setCursor(12, 44);
     display->println("INITIALIZING RF...");
     display->display();

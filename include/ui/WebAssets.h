@@ -471,7 +471,7 @@ input[type=range] {
                 <div class="brand-icon">⚔</div>
                 <div class="brand-text">
                     <h1>ESP32-RF-SWORD</h1>
-                    <span class="badge">v2.5.0 PRO</span>
+                    <span class="badge">v0.1.0</span>
                 </div>
             </div>
             <div class="status-indicator">

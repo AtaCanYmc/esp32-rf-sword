@@ -81,7 +81,7 @@ jobs:
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
             echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           else
-            echo "TAG_NAME=v2.5.0-snapshot" >> $GITHUB_OUTPUT
+            echo "TAG_NAME=v0.1.0-snapshot" >> $GITHUB_OUTPUT
           fi
 
       - name: 🌟 Create GitHub Release
