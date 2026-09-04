@@ -1,0 +1,59 @@
+name: Deploy Web Flasher to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ "v*" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: 📦 Install PlatformIO & esptool
+        run: |
+          pip install --upgrade platformio esptool
+
+      - name: 🚀 Build All Target Binaries
+        run: |
+          pio run -e esp32-c3-supermini
+          pio run -e esp32-devkit-v1
+          pio run -e esp32-s3-devkit
+
+      - name: 🧩 Merge Binaries into Web Flasher Directory
+        run: |
+          python3 scripts/merge_bin.py -e esp32-c3-supermini -o flasher
+          python3 scripts/merge_bin.py -e esp32-devkit-v1 -o flasher
+          python3 scripts/merge_bin.py -e esp32-s3-devkit -o flasher
+
+      - name: 🔧 Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: 📤 Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: flasher
+
+      - name: 🚀 Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

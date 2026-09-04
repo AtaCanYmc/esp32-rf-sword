@@ -1,0 +1,118 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # -----------------------------------------------------------------------------
+  # Stage 1: Host-side Unit Tests & Verification
+  # -----------------------------------------------------------------------------
+  test-native:
+    name: 🧪 Native Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Set up Clang / C++17 Toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang
+
+      - name: 🚀 Compile and Run Test Suite
+        run: |
+          clang++ -std=c++17 -DHOST_SIMULATION -Iinclude -Isrc -Itest \
+            test/test_main.cpp test/test_channel_math.cpp test/test_presets.cpp \
+            test/test_waterfall.cpp test/test_system_state.cpp \
+            src/radio/ChannelMath.cpp src/attack/Presets.cpp \
+            src/analyzer/WaterfallBuffer.cpp src/core/SystemState.cpp \
+            -o sword_unit_tests
+          ./sword_unit_tests
+
+  # -----------------------------------------------------------------------------
+  # Stage 2: Web Bundle Synchronisation Check
+  # -----------------------------------------------------------------------------
+  web-bundle-check:
+    name: 🌐 Web Assets Sync Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: 🔍 Re-bundle Web Assets and Check Clean Diff
+        run: |
+          python3 scripts/bundle_web.py
+          git diff --exit-code include/ui/WebAssets.h || (echo "[-] Error: WebAssets.h is out of sync with web/! Run 'python3 scripts/bundle_web.py' locally and commit." && exit 1)
+
+  # -----------------------------------------------------------------------------
+  # Stage 3: Multi-Target Firmware Matrix Build
+  # -----------------------------------------------------------------------------
+  build-firmware:
+    name: 🔨 Build Firmware (${{ matrix.env }})
+    needs: [test-native, web-bundle-check]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        env:
+          - esp32-c3-supermini
+          - esp32-devkit-v1
+          - esp32-s3-devkit
+          - esp32-c6-devkit
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: 📦 Install PlatformIO & esptool
+        run: |
+          pip install --upgrade platformio esptool
+
+      - name: 💾 Cache PlatformIO Core & Packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio
+            .pio
+          key: ${{ runner.os }}-pio-${{ matrix.env }}-${{ hashFiles('platformio.ini', 'partitions.csv') }}
+          restore-keys: |
+            ${{ runner.os }}-pio-${{ matrix.env }}-
+            ${{ runner.os }}-pio-
+
+      - name: 🚀 Compile Firmware
+        run: |
+          pio run -e ${{ matrix.env }}
+
+      - name: 🧩 Generate Merged Unified Binary
+        run: |
+          python3 scripts/merge_bin.py -e ${{ matrix.env }} -o dist
+
+      - name: 📤 Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: esp32-rf-sword-${{ matrix.env }}-binaries
+          path: |
+            dist/*.bin
+            .pio/build/${{ matrix.env }}/firmware.bin
+            .pio/build/${{ matrix.env }}/bootloader.bin
+            .pio/build/${{ matrix.env }}/partitions.bin
+          if-no-files-found: error

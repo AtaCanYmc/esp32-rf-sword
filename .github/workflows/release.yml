@@ -1,0 +1,113 @@
+name: Release & Binary Packaging
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    name: 📦 Build Release Packages (${{ matrix.env }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env:
+          - esp32-c3-supermini
+          - esp32-devkit-v1
+          - esp32-s3-devkit
+          - esp32-c6-devkit
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: 📦 Install PlatformIO & esptool
+        run: |
+          pip install --upgrade platformio esptool
+
+      - name: 🚀 Build Release Firmware
+        run: |
+          pio run -e ${{ matrix.env }}
+
+      - name: 🧩 Generate Unified Merged Binary (0x0000)
+        run: |
+          python3 scripts/merge_bin.py -e ${{ matrix.env }} -o release_assets
+
+      - name: 🗜️ Copy Separate Binaries
+        run: |
+          cp .pio/build/${{ matrix.env }}/firmware.bin release_assets/esp32-rf-sword-${{ matrix.env }}-firmware.bin
+          cp .pio/build/${{ matrix.env }}/bootloader.bin release_assets/esp32-rf-sword-${{ matrix.env }}-bootloader.bin
+          cp .pio/build/${{ matrix.env }}/partitions.bin release_assets/esp32-rf-sword-${{ matrix.env }}-partitions.bin
+
+      - name: 📤 Upload Board Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.env }}
+          path: release_assets/*
+
+  publish-release:
+    name: 🚀 Publish GitHub Release
+    needs: build-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 📥 Download All Release Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all_assets
+          pattern: release-*
+          merge-multiple: true
+
+      - name: 🛡️ Generate SHA-256 Checksums
+        run: |
+          cd all_assets
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: 🏷️ Determine Release Tag
+        id: vars
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            echo "TAG_NAME=v2.5.0-snapshot" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🌟 Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.vars.outputs.TAG_NAME }}
+          name: "ESP32-RF-SWORD ${{ steps.vars.outputs.TAG_NAME }}"
+          body: |
+            ## ⚔️ ESP32-RF-SWORD Release ${{ steps.vars.outputs.TAG_NAME }}
+            
+            Industrial-grade multi-band RF security research, spectrum analysis, and disruption toolkit for the ESP32 family.
+            
+            ### 📦 Included Firmware Packages:
+            - **Merged Unified Binaries** (Flash directly to offset `0x0000` via [ESP Web Flasher](https://espressif.github.io/esptool-js/) or `esptool.py`):
+              - `esp32-rf-sword-esp32-c3-supermini-merged.bin` (ESP32-C3 SuperMini)
+              - `esp32-rf-sword-esp32-devkit-v1-merged.bin` (ESP32 DevKit V1 / WROOM-32)
+              - `esp32-rf-sword-esp32-s3-devkit-merged.bin` (ESP32-S3 DevKit)
+              - `esp32-rf-sword-esp32-c6-devkit-merged.bin` (ESP32-C6 DevKit)
+            
+            ### ⚡ Quick Flash Command:
+            ```bash
+            esptool.py --chip esp32 write_flash 0x0000 esp32-rf-sword-esp32-devkit-v1-merged.bin
+            ```
+            
+            *Verify integrity using `SHA256SUMS.txt`.*
+          files: |
+            all_assets/*
+          draft: false
+          prerelease: false

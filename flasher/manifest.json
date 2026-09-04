@@ -1,0 +1,35 @@
+{
+  "name": "ESP32-RF-SWORD",
+  "version": "2.5.0",
+  "home_assistant_domain": "esphome",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        {
+          "path": "esp32-rf-sword-esp32-c3-supermini-merged.bin",
+          "offset": 0
+        }
+      ]
+    },
+    {
+      "chipFamily": "ESP32",
+      "parts": [
+        {
+          "path": "esp32-rf-sword-esp32-devkit-v1-merged.bin",
+          "offset": 0
+        }
+      ]
+    },
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [
+        {
+          "path": "esp32-rf-sword-esp32-s3-devkit-merged.bin",
+          "offset": 0
+        }
+      ]
+    }
+  ]
+}
