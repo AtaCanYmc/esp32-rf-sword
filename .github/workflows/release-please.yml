@@ -63,7 +63,7 @@ jobs:
           cp .pio/build/${{ matrix.env }}/partitions.bin release_assets/esp32-rf-sword-${{ matrix.env }}-partitions.bin
 
       - name: 📤 Upload Artifacts to Job
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-assets-${{ matrix.env }}
           path: release_assets/*
