@@ -35,8 +35,10 @@ flowchart TB
         end
     end
 
-    CORE_0 <==>|Non-blocking Thread-Safe Bus| SHARED_BUS
-    CORE_1 <==>|Lock-Free Low-Latency Access| SHARED_BUS
+    WEB_SRV <--> ATOMIC
+    SERIAL_CLI <--> ATOMIC
+    RF_LOOP <--> ATOMIC
+    RF_LOOP <--> MUTEX
 ```
 
 ### FreeRTOS Core Separation Benefits:
@@ -76,9 +78,23 @@ flowchart TD
     SPI_MASTER --> MOSI
     MISO --> SPI_MASTER
 
-    SCK === R1 & R2 & R3 & R4 & RSUB
-    MOSI === R1 & R2 & R3 & R4 & RSUB
-    R1 & R2 & R3 & R4 & RSUB === MISO
+    SCK --- R1
+    SCK --- R2
+    SCK --- R3
+    SCK --- R4
+    SCK --- RSUB
+
+    MOSI --- R1
+    MOSI --- R2
+    MOSI --- R3
+    MOSI --- R4
+    MOSI --- RSUB
+
+    R1 --- MISO
+    R2 --- MISO
+    R3 --- MISO
+    R4 --- MISO
+    RSUB --- MISO
 
     GPIO_CSN1 -->|Individual Select| R1
     GPIO_CSN2 -->|Individual Select| R2

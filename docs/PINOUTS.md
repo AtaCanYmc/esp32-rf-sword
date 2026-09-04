@@ -71,11 +71,23 @@ flowchart LR
         O_SCL["SCL"]
     end
 
-    C3_SCK === R1_SCK & R2_SCK & CC_SCK
-    C3_MISO === R1_MISO & R2_MISO & CC_MISO
-    C3_MOSI === R1_MOSI & R2_MOSI & CC_MOSI
-    C3_3V3 === R1_VCC & R2_VCC
-    C3_GND === R1_GND & R2_GND
+    C3_SCK --- R1_SCK
+    C3_SCK --- R2_SCK
+    C3_SCK --- CC_SCK
+
+    C3_MISO --- R1_MISO
+    C3_MISO --- R2_MISO
+    C3_MISO --- CC_MISO
+
+    C3_MOSI --- R1_MOSI
+    C3_MOSI --- R2_MOSI
+    C3_MOSI --- CC_MOSI
+
+    C3_3V3 --- R1_VCC
+    C3_3V3 --- R2_VCC
+
+    C3_GND --- R1_GND
+    C3_GND --- R2_GND
 
     C3_R1_CE --> R1_CE
     C3_R1_CSN --> R1_CSN
@@ -154,9 +166,23 @@ flowchart TD
         MOD_OLED["0.96 inch SSD1306 (0x3C)"]
     end
 
-    VSPI_SCK === MOD_A & MOD_B & MOD_C & MOD_D & MOD_CC
-    VSPI_MISO === MOD_A & MOD_B & MOD_C & MOD_D & MOD_CC
-    VSPI_MOSI === MOD_A & MOD_B & MOD_C & MOD_D & MOD_CC
+    VSPI_SCK --- MOD_A
+    VSPI_SCK --- MOD_B
+    VSPI_SCK --- MOD_C
+    VSPI_SCK --- MOD_D
+    VSPI_SCK --- MOD_CC
+
+    VSPI_MISO --- MOD_A
+    VSPI_MISO --- MOD_B
+    VSPI_MISO --- MOD_C
+    VSPI_MISO --- MOD_D
+    VSPI_MISO --- MOD_CC
+
+    VSPI_MOSI --- MOD_A
+    VSPI_MOSI --- MOD_B
+    VSPI_MOSI --- MOD_C
+    VSPI_MOSI --- MOD_D
+    VSPI_MOSI --- MOD_CC
 
     CSN_A --> MOD_A
     CE_A --> MOD_A

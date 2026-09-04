@@ -51,15 +51,15 @@
 ```mermaid
 flowchart TD
     subgraph UI_LAYER ["User Interface & Control Layer"]
-        WEB["🌐 SwordWeb UI<br/>(Captive Portal / HTTP / WebSocket)"]
-        CLI["💻 Sword-CLI<br/>(ANSI Interactive Shell @ 115200)"]
-        OLED["📺 OLED Display HUD<br/>(SSD1306 / I2C 128x64)"]
+        WEB["🌐 SwordWeb UI (Captive Portal / HTTP / WebSocket)"]
+        CLI["💻 Sword-CLI (ANSI Interactive Shell @ 115200)"]
+        OLED["📺 OLED Display HUD (SSD1306 / I2C 128x64)"]
     end
 
     subgraph CORE_LAYER ["Core Management & Concurrency (Core 0)"]
-        SYS["⚙️ SystemState<br/>(Atomic Metrics / Telemetry)"]
-        NVS["💾 NVS Flash Manager<br/>(Preferences Persistence)"]
-        TASK["🔄 TaskManager<br/>(FreeRTOS Dual-Core Scheduler)"]
+        SYS["⚙️ SystemState (Atomic Metrics / Telemetry)"]
+        NVS["💾 NVS Flash Manager (Preferences Persistence)"]
+        TASK["🔄 TaskManager (FreeRTOS Dual-Core Scheduler)"]
     end
 
     subgraph ATTACK_LAYER ["RF Attack & Research Coordinator (Core 1 - Priority 24)"]
@@ -72,18 +72,18 @@ flowchart TD
 
     subgraph RADIO_LAYER ["Hardware Transceivers & Native Engines"]
         SPI_BUS["⚡ High-Speed Shared SPI Bus (Up to 20MHz)"]
-        NRF_ARR["📡 Dual / Quad nRF24L01+ Array<br/>(2.4 GHz ISM 2400-2525 MHz)"]
-        CC1101["📻 TI CC1101 Sub-GHz Module<br/>(315 / 433 / 868 / 915 MHz)"]
-        WIFI_ENG["📶 ESP32 Native 802.11 Engine<br/>(Raw Beacon Flood / Deauth Storm)"]
-        BLE_ENG["📱 ESP32 Native BLE Engine<br/>(Apple / FastPair / SwiftPair Flood)"]
+        NRF_ARR["📡 Dual / Quad nRF24L01+ Array (2.4 GHz ISM)"]
+        CC1101["📻 TI CC1101 Sub-GHz Module (315-915 MHz)"]
+        WIFI_ENG["📶 ESP32 Native 802.11 Engine (Beacon / Deauth)"]
+        BLE_ENG["📱 ESP32 Native BLE Engine (Popup Flooder)"]
     end
 
-    WEB <-->|WebSocket / REST| SYS
-    CLI <-->|UART / USB CDC| SYS
-    OLED <--|I2C| SYS
+    WEB -->|WebSocket / REST| SYS
+    CLI -->|UART / USB CDC| SYS
+    SYS --> OLED
 
-    SYS <--> CORE_LAYER
-    TASK -->|Launches Priority 24 Task| COORD
+    SYS <--> NVS
+    TASK -->|Launches Core 1 Worker Task| COORD
 
     COORD --> SWEEP
     COORD --> TARGET
