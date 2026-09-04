@@ -1,3 +1,13 @@
+```text
+  ███████╗███████╗██████╗ ██████╗ ██████╗         ██████╗ ███████╗    ███████╗██╗    ██╗ ██████╗ ██████╗ ██████╗ 
+  ██╔════╝██╔════╝██╔══██╗╚════██╗╚════██╗        ██╔══██╗██╔════╝    ██╔════╝██║    ██║██╔═══██╗██╔══██╗██╔══██╗
+  █████╗  ███████╗██████╔╝ █████╔╝ █████╔╝█████╗  ██████╔╝█████╗      ███████╗██║ █╗ ██║██║   ██║██████╔╝██║  ██║
+  ██╔══╝  ╚════██║██╔═══╝  ╚═══██╗██╔═══╝ ╚════╝  ██╔══██╗██╔══╝      ╚════██║██║███╗██║██║   ██║██╔══██╗██║  ██║
+  ███████╗███████║██║     ██████╔╝███████╗        ██║  ██║██║         ███████║╚███╔███╔╝╚██████╔╝██║  ██║██████╔╝
+  ╚══════╝╚══════╝╚═╝     ╚═════╝ ╚══════╝        ╚═╝  ╚═╝╚═╝         ╚══════╝ ╚══╝╚══╝  ╚═════╝ ╚═╝  ╚═╝╚═════╝ 
+                      ⚔️ [ ADVANCED MULTI-BAND RF SECURITY & RESEARCH TOOLKIT ] ⚔️
+```
+
 # ESP32-RF-SWORD ⚔️
 
 [![Version](https://img.shields.io/badge/Version-2.5.0_PRO-00f0ff.svg?style=for-the-badge)](https://github.com/your-username/esp32-rf-sword)
@@ -36,34 +46,57 @@
 
 ## 🏛️ System Architecture
 
-```
-+-------------------------------------------------------------------------+
-|                           ESP32-RF-SWORD CORE                           |
-+-------------------------------------------------------------------------+
-|                                                                         |
-|  +---------------------+   +---------------------+   +----------------+ |
-|  |     SwordWeb UI     |   |     Sword-CLI       |   |  OLED Display  | |
-|  | (Captive AP / WS)   |   |  (ANSI Terminal)    |   |  (SSD1306/I2C) | |
-|  +----------+----------+   +----------+----------+   +--------+-------+ |
-|             |                         |                       |         |
-|  +----------v-------------------------v-----------------------v-------+ |
-|  |                   Core Management & FreeRTOS Bus                   | |
-|  |            (Task Allocation, NVS Flash Storage, Telemetry)          | |
-|  +------------------------------------+-------------------------------+ |
-|                                       | (Core 1 Priority 24 Task)       |
-|  +------------------------------------v-------------------------------+ |
-|  |                         RF Attack Coordinator                      | |
-|  |     (Coprime Sweeper, Targeted Jammer, Noise Blaster, Analyzer)    | |
-|  +------------------------------------+-------------------------------+ |
-|                                       |                                 |
-|  +--------------------+---------------+----------------+--------------+ |
-|  |                    |                                |              | |
-|  |  +--------------+  |  +--------------------------+  |  +---------+ | |
-|  |  | Multi-nRF24  |  |  | Native ESP32 802.11/BLE  |  |  | CC1101  | | |
-|  |  | (2.4 GHz ISM)|  |  | (Wi-Fi Raw / BLE Spammer)|  |  |(Sub-GHz)| | |
-|  |  +--------------+  |  +--------------------------+  |  +---------+ | |
-|  +--------------------+--------------------------------+--------------+ |
-+-------------------------------------------------------------------------+
+```mermaid
+flowchart TD
+    subgraph UI_LAYER ["User Interface & Control Layer"]
+        WEB["🌐 SwordWeb UI<br/>(Captive Portal / HTTP / WebSocket)"]
+        CLI["💻 Sword-CLI<br/>(ANSI Interactive Shell @ 115200)"]
+        OLED["📺 OLED Display HUD<br/>(SSD1306 / I2C 128x64)"]
+    end
+
+    subgraph CORE_LAYER ["Core Management & Concurrency (Core 0)"]
+        SYS["⚙️ SystemState<br/>(Atomic Metrics / Telemetry)"]
+        NVS["💾 NVS Flash Manager<br/>(Preferences Persistence)"]
+        TASK["🔄 TaskManager<br/>(FreeRTOS Dual-Core Scheduler)"]
+    end
+
+    subgraph ATTACK_LAYER ["RF Attack & Research Coordinator (Core 1 - Priority 24)"]
+        COORD["⚔️ AttackCoordinator Master"]
+        SWEEP["🌊 Coprime / Linear / Random Sweeper"]
+        TARGET["🎯 Protocol Targeter (BLE/Wi-Fi/ZigBee/Drone)"]
+        NOISE["⚡ Corrupted Frame / Noise Blaster"]
+        SPEC["📊 128-Ch 2.4GHz Spectrum Scanner"]
+    end
+
+    subgraph RADIO_LAYER ["Hardware Transceivers & Native Engines"]
+        SPI_BUS["⚡ High-Speed Shared SPI Bus (Up to 20MHz)"]
+        NRF_ARR["📡 Dual / Quad nRF24L01+ Array<br/>(2.4 GHz ISM 2400-2525 MHz)"]
+        CC1101["📻 TI CC1101 Sub-GHz Module<br/>(315 / 433 / 868 / 915 MHz)"]
+        WIFI_ENG["📶 ESP32 Native 802.11 Engine<br/>(Raw Beacon Flood / Deauth Storm)"]
+        BLE_ENG["📱 ESP32 Native BLE Engine<br/>(Apple / FastPair / SwiftPair Flood)"]
+    end
+
+    WEB <-->|WebSocket / REST| SYS
+    CLI <-->|UART / USB CDC| SYS
+    OLED <--|I2C| SYS
+
+    SYS <--> CORE_LAYER
+    TASK -->|Launches Priority 24 Task| COORD
+
+    COORD --> SWEEP
+    COORD --> TARGET
+    COORD --> NOISE
+    COORD --> SPEC
+
+    SWEEP --> SPI_BUS
+    TARGET --> SPI_BUS
+    NOISE --> SPI_BUS
+    SPEC --> SPI_BUS
+
+    SPI_BUS --> NRF_ARR
+    SPI_BUS --> CC1101
+    COORD --> WIFI_ENG
+    COORD --> BLE_ENG
 ```
 
 ---

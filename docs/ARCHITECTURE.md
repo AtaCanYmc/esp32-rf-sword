@@ -8,30 +8,35 @@ ESP32-RF-SWORD is a modular, multi-radio RF transmission and spectrum research p
 
 ## 2. Multi-Core Task Scheduling & Concurrency
 
-```
-                        ESP32 DUAL-CORE ALLOCATION
-       +-------------------------------------------------------------+
-       |                                                             |
-       |  CORE 1: REAL-TIME RF WORKER (Priority 24 / High-Priority)  |
-       |  +-------------------------------------------------------+  |
-       |  |  Non-blocking microsecond-precise SPI hopping loops   |  |
-       |  |  Continuous Wave (CW) carrier generation             |  |
-       |  |  Coprime permutation calculations                     |  |
-       |  |  Gaussian dwell jitter calculation (10 - 5000 µs)     |  |
-       |  |  High-rate corrupted packet bursting                  |  |
-       |  |  Fast 128-channel spectrum energy scanning            |  |
-       |  +-------------------------------------------------------+  |
-       |                                                             |
-       |  CORE 0: SYSTEM MANAGEMENT & I/O (Priority 5)               |
-       |  +-------------------------------------------------------+  |
-       |  |  AsyncWebServer (HTTP / REST API / Captive Portal)    |  |
-       |  |  AsyncWebSocket Telemetry & Waterfall Stream (10 Hz)  |  |
-       |  |  Interactive Serial CLI Shell (UART/USB CDC @ 115200) |  |
-       |  |  I2C OLED SSD1306 Graphic HUD Driver (4 Hz refresh)   |  |
-       |  |  Flash NVS Persistent Storage Sync                    |  |
-       |  |  Hardware Watchdog & Thermal Monitoring               |  |
-       |  +-------------------------------------------------------+  |
-       +-------------------------------------------------------------+
+```mermaid
+flowchart TB
+    subgraph ESP32_CHIP ["ESP32 DUAL-CORE HARDWARE ARCHITECTURE"]
+        subgraph CORE_1 ["⚡ CORE 1: REAL-TIME RF WORKER (Priority 24 / Non-Blocking)"]
+            RF_LOOP["Microsecond-Precise SPI Hopping Loop"]
+            CW_GEN["Continuous Wave (CW) Carrier Generation"]
+            COPRIME["Coprime Step Permutation Math"]
+            JITTER["Gaussian Dwell Jitter Generator (10 - 5000 µs)"]
+            NOISE_BLAST["High-Rate Corrupted Frame Blaster"]
+            SPEC_SCAN["Fast 128-Channel RSSI Spectrum Scanner"]
+        end
+
+        subgraph CORE_0 ["🖥️ CORE 0: SYSTEM MANAGEMENT & NETWORK (Priority 5)"]
+            WEB_SRV["AsyncWebServer (HTTP / REST API / Captive Portal)"]
+            WS_SRV["AsyncWebSocket Telemetry Stream (10 Hz)"]
+            SERIAL_CLI["Interactive ANSI Serial CLI (UART @ 115200)"]
+            OLED_DRV["I2C SSD1306 Graphic Display Driver (4 Hz)"]
+            NVS_SYNC["Flash NVS Preferences Storage Sync"]
+            SAFETY["Hardware Watchdog & Thermal Throttle Check"]
+        end
+
+        subgraph SHARED_BUS ["THREAD-SAFE COMMUNICATION BUS"]
+            MUTEX["FreeRTOS Mutex & Semaphores"]
+            ATOMIC["Atomic State Flags & Metrics"]
+        end
+    end
+
+    CORE_0 <==>|Non-blocking Thread-Safe Bus| SHARED_BUS
+    CORE_1 <==>|Lock-Free Low-Latency Access| SHARED_BUS
 ```
 
 ### FreeRTOS Core Separation Benefits:
@@ -42,25 +47,44 @@ ESP32-RF-SWORD is a modular, multi-radio RF transmission and spectrum research p
 
 ## 3. High-Speed SPI Bus Multiplexing & CSN Conditioning
 
-```
-                     SHARED SPI BUS TOPOLOGY
-             +---------------------------------------+
-             |         ESP32 SPI BUS (FSPI/VSPI)     |
-             |       SCK | MISO | MOSI (Up to 20MHz) |
-             +-----+---------+---------+---------+---+
-                   |         |         |         |
-         +---------+   +-----+---+ +---+-----+ +-+---------+
-         |             |         | |         | |           |
-   +-----v----+  +-----v----+  +-v-v----+  +-v-v-----+ +-v-------+
-   | nRF24 #1 |  | nRF24 #2 |  |nRF24 #3|  |nRF24 #4 | | CC1101  |
-   | (2.4GHz) |  | (2.4GHz) |  |(2.4GHz)|  |(2.4GHz) | |(Sub-GHz)|
-   +----------+  +----------+  +--------+  +---------+ +---------+
-       |             |             |           |           |
-    CSN_1         CSN_2         CSN_3       CSN_4       CSN_SUB
-       |             |             |           |           |
-       +-------------+-------------+-----------+-----------+
-                                   |
-                      Independent Chip Selects
+```mermaid
+flowchart TD
+    subgraph MCU ["ESP32 Microcontroller"]
+        SPI_MASTER["Hardware SPI Host (FSPI / VSPI)<br/>Clock: 10 - 20 MHz"]
+        GPIO_CSN1["GPIO CSN 1"]
+        GPIO_CSN2["GPIO CSN 2"]
+        GPIO_CSN3["GPIO CSN 3"]
+        GPIO_CSN4["GPIO CSN 4"]
+        GPIO_CSN_SUB["GPIO CSN Sub-GHz"]
+    end
+
+    subgraph SPI_LINES ["Shared High-Speed SPI Bus"]
+        SCK["SCK (Clock)"]
+        MOSI["MOSI (Master Out)"]
+        MISO["MISO (Master In)"]
+    end
+
+    subgraph TRANSCEIVERS ["Multi-Transceiver Array"]
+        R1["📡 Radio #1: nRF24L01+ (2.4 GHz)"]
+        R2["📡 Radio #2: nRF24L01+ (2.4 GHz)"]
+        R3["📡 Radio #3: nRF24L01+ (2.4 GHz)"]
+        R4["📡 Radio #4: nRF24L01+ (2.4 GHz)"]
+        RSUB["📻 Radio Sub-GHz: TI CC1101 (315-915 MHz)"]
+    end
+
+    SPI_MASTER --> SCK
+    SPI_MASTER --> MOSI
+    MISO --> SPI_MASTER
+
+    SCK === R1 & R2 & R3 & R4 & RSUB
+    MOSI === R1 & R2 & R3 & R4 & RSUB
+    R1 & R2 & R3 & R4 & RSUB === MISO
+
+    GPIO_CSN1 -->|Individual Select| R1
+    GPIO_CSN2 -->|Individual Select| R2
+    GPIO_CSN3 -->|Individual Select| R3
+    GPIO_CSN4 -->|Individual Select| R4
+    GPIO_CSN_SUB -->|Individual Select| RSUB
 ```
 
 ### Bus Conditioning Mechanism:
@@ -92,6 +116,52 @@ where $t_{\min} = 120\,\mu\text{s}$ and $t_{\max} = 180\,\mu\text{s}$ by default
 ---
 
 ## 5. Software Layers
+
+```mermaid
+flowchart TD
+    subgraph UI ["Layer 5: Presentation & User Interfaces (ui/)"]
+        direction LR
+        W["WebServerManager<br/>(AsyncWeb / WebSocket / Captive)"]
+        CLI["SerialCLI<br/>(ANSI VT100 Shell)"]
+        DISP["DisplayManager<br/>(I2C SSD1306 HUD)"]
+    end
+
+    subgraph ATTACK ["Layer 4: Attack & Analysis Engine (attack/ & analyzer/)"]
+        direction LR
+        COORD["AttackCoordinator"]
+        SWEEP_MOD["SweepAttack / TargetedAttack / NoiseBurst"]
+        SPEC_MOD["SpectrumScanner / WaterfallBuffer"]
+    end
+
+    subgraph RADIO ["Layer 3: Radio Transceiver Drivers (radio/)"]
+        direction LR
+        NRF_MOD["NRF24Controller (Dual/Quad 2.4GHz)"]
+        CC_MOD["CC1101Controller (Sub-GHz)"]
+        WIFI_MOD["WiFiEngine (802.11 Raw)"]
+        BLE_MOD["BLEEngine (BLE 4.2/5.0)"]
+    end
+
+    subgraph CORE ["Layer 2: Core System & Concurrency (core/)"]
+        direction LR
+        STATE["SystemState"]
+        NVS_MOD["NVSManager"]
+        TASK_MOD["TaskManager"]
+        LOG_MOD["Logger"]
+    end
+
+    subgraph HAL ["Layer 1: Hardware Abstraction (hal/)"]
+        direction LR
+        PINS["PinDefinitions & BoardProfiles"]
+        SPI_MGR["SPIManager (Multiplex & Mutex)"]
+    end
+
+    UI --> CORE
+    UI --> ATTACK
+    ATTACK --> RADIO
+    ATTACK --> CORE
+    RADIO --> HAL
+    CORE --> HAL
+```
 
 1. **Hardware Abstraction Layer (`hal/`)**: Board profile auto-detection (`ESP32-C3`, `ESP32-S3`, `ESP32 DevKit`, `ESP32-C6`), GPIO pin mappings, SPI bus arbitration.
 2. **Radio Engine Layer (`radio/`)**: Low-level register drivers for nRF24L01+, TI CC1101, native ESP32 Wi-Fi raw frame engine, and native BLE advertising engine.

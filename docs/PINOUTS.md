@@ -1,6 +1,6 @@
 # Hardware Wiring & Pinout Guide
 
-This document contains complete wiring schematics and GPIO pinout mappings for all supported ESP32 boards.
+This document contains complete wiring schematics, Mermaid hardware interconnection diagrams, and GPIO pinout mappings for all supported ESP32 boards.
 
 ---
 
@@ -18,21 +18,79 @@ This document contains complete wiring schematics and GPIO pinout mappings for a
 
 The ESP32-C3 SuperMini is an ultra-small single-core RISC-V board ideal for building pocket-sized 2.4 GHz multi-radio devices.
 
-```
-                    ESP32-C3 SuperMini Pinout Map
-                         +-----------------+
-                         | [USB Type-C]    |
-                  GPIO 0 | 0             5V| 5V (USB In)
-      Radio A CE  GPIO 3 | 3             GND| GND
-     Radio A CSN  GPIO 7 | 7            3V3| 3.3V (VCC Out)
-     Radio B CSN GPIO 10 | 10             9| GPIO 9 (Boot Button / I2C SCL)
-      Radio B CE  GPIO 1 | 1              8| GPIO 8 (LED / I2C SDA)
-        SPI SCK   GPIO 4 | 4              6| GPIO 6 (SPI MOSI)
-        SPI MISO  GPIO 5 | 5              7| GPIO 7 (Radio A CSN)
-                         +-----------------+
+```mermaid
+flowchart LR
+    subgraph C3 ["ESP32-C3 SuperMini"]
+        C3_SCK["GPIO 4 (SCK)"]
+        C3_MISO["GPIO 5 (MISO)"]
+        C3_MOSI["GPIO 6 (MOSI)"]
+        C3_R1_CE["GPIO 3 (CE)"]
+        C3_R1_CSN["GPIO 7 (CSN)"]
+        C3_R2_CE["GPIO 1 (CE)"]
+        C3_R2_CSN["GPIO 10 (CSN)"]
+        C3_CC_CSN["GPIO 0 (CSN)"]
+        C3_CC_GDO0["GPIO 2 (GDO0)"]
+        C3_CC_GDO2["GPIO 8 (GDO2)"]
+        C3_I2C_SDA["GPIO 8 (SDA)"]
+        C3_I2C_SCL["GPIO 9 (SCL)"]
+        C3_3V3["3.3V Power"]
+        C3_GND["GND"]
+    end
+
+    subgraph RADIO1 ["nRF24 #1 (Radio A 2.4GHz)"]
+        R1_SCK["SCK"]
+        R1_MISO["MISO"]
+        R1_MOSI["MOSI"]
+        R1_CE["CE"]
+        R1_CSN["CSN"]
+        R1_VCC["VCC (3.3V)"]
+        R1_GND["GND"]
+    end
+
+    subgraph RADIO2 ["nRF24 #2 (Radio B 2.4GHz)"]
+        R2_SCK["SCK"]
+        R2_MISO["MISO"]
+        R2_MOSI["MOSI"]
+        R2_CE["CE"]
+        R2_CSN["CSN"]
+        R2_VCC["VCC (3.3V)"]
+        R2_GND["GND"]
+    end
+
+    subgraph SUBGHZ ["TI CC1101 (Sub-GHz)"]
+        CC_SCK["SCK"]
+        CC_MISO["MISO"]
+        CC_MOSI["MOSI"]
+        CC_CSN["CSN"]
+        CC_G0["GDO0"]
+        CC_G2["GDO2"]
+    end
+
+    subgraph OLED ["I2C SSD1306 Display (Optional)"]
+        O_SDA["SDA"]
+        O_SCL["SCL"]
+    end
+
+    C3_SCK === R1_SCK & R2_SCK & CC_SCK
+    C3_MISO === R1_MISO & R2_MISO & CC_MISO
+    C3_MOSI === R1_MOSI & R2_MOSI & CC_MOSI
+    C3_3V3 === R1_VCC & R2_VCC
+    C3_GND === R1_GND & R2_GND
+
+    C3_R1_CE --> R1_CE
+    C3_R1_CSN --> R1_CSN
+    C3_R2_CE --> R2_CE
+    C3_R2_CSN --> R2_CSN
+
+    C3_CC_CSN -.-> CC_CSN
+    C3_CC_GDO0 -.-> CC_G0
+    C3_CC_GDO2 -.-> CC_G2
+
+    C3_I2C_SDA -.-> O_SDA
+    C3_I2C_SCL -.-> O_SCL
 ```
 
-### Wiring Table:
+### Wiring Table (ESP32-C3 SuperMini):
 | Component | Signal | ESP32-C3 GPIO | Description |
 |---|---|---|---|
 | **SPI Bus** | SCK | `GPIO 4` | Shared SPI Clock |
@@ -54,29 +112,70 @@ The ESP32-C3 SuperMini is an ultra-small single-core RISC-V board ideal for buil
 
 ## Profile 2: ESP32 DevKit V1 / WROOM-32 (Standard Dual-Core)
 
-```
-                    ESP32 DevKit V1 Pinout Map
-                         +-----------------+
-                         | [Micro/Type-C]  |
-                     EN  | EN           23 | GPIO 23 (SPI MOSI)
-                     36  | VP           22 | GPIO 22 (I2C SCL)
-                     39  | VN            1 | GPIO 1  (UART TX0)
-                     34  | 34            3 | GPIO 3  (UART RX0)
-                     35  | 35           21 | GPIO 21 (I2C SDA)
-                     32  | 32           19 | GPIO 19 (SPI MISO)
-        CC1101 GDO2  33  | 33           18 | GPIO 18 (SPI SCK)
-        CC1101 GDO0  25  | 25            5 | GPIO 5  (Radio A CSN)
-        CC1101 CSN   26  | 26           17 | GPIO 17 (TX2)
-        Radio D CSN  27  | 27           16 | GPIO 16 (RX2)
-        Radio D CE   14  | 14            4 | GPIO 4  (Radio A CE)
-        Radio C CE   13  | 13            0 | GPIO 0  (Boot Button)
-        Radio C CSN  12  | 12            2 | GPIO 2  (Radio B CE / Blue LED)
-                     GND | GND          15 | GPIO 15 (Radio B CSN)
-                     VIN | VIN         3V3 | 3.3V Power Out
-                         +-----------------+
+```mermaid
+flowchart TD
+    subgraph ESP32_DEVKIT ["ESP32 DevKit V1 (30 / 38 Pin)"]
+        VSPI_SCK["GPIO 18 (VSPI SCK)"]
+        VSPI_MISO["GPIO 19 (VSPI MISO)"]
+        VSPI_MOSI["GPIO 23 (VSPI MOSI)"]
+        
+        CSN_A["GPIO 5 (CSN 1)"]
+        CE_A["GPIO 4 (CE 1)"]
+        
+        CSN_B["GPIO 15 (CSN 2)"]
+        CE_B["GPIO 2 (CE 2)"]
+        
+        CSN_C["GPIO 12 (CSN 3)"]
+        CE_C["GPIO 13 (CE 3)"]
+        
+        CSN_D["GPIO 27 (CSN 4)"]
+        CE_D["GPIO 14 (CE 4)"]
+        
+        CSN_CC["GPIO 26 (CC1101 CSN)"]
+        GDO0_CC["GPIO 25 (GDO0)"]
+        GDO2_CC["GPIO 33 (GDO2)"]
+        
+        I2C_SDA["GPIO 21 (SDA)"]
+        I2C_SCL["GPIO 22 (SCL)"]
+    end
+
+    subgraph ARRAY_24G ["2.4GHz nRF24L01+ Quad Array"]
+        MOD_A["Radio #1 (A)"]
+        MOD_B["Radio #2 (B)"]
+        MOD_C["Radio #3 (C)"]
+        MOD_D["Radio #4 (D)"]
+    end
+
+    subgraph SUB_MOD ["Sub-GHz Transceiver"]
+        MOD_CC["TI CC1101 Module"]
+    end
+
+    subgraph OLED_MOD ["I2C OLED Screen"]
+        MOD_OLED["0.96 inch SSD1306 (0x3C)"]
+    end
+
+    VSPI_SCK === MOD_A & MOD_B & MOD_C & MOD_D & MOD_CC
+    VSPI_MISO === MOD_A & MOD_B & MOD_C & MOD_D & MOD_CC
+    VSPI_MOSI === MOD_A & MOD_B & MOD_C & MOD_D & MOD_CC
+
+    CSN_A --> MOD_A
+    CE_A --> MOD_A
+    CSN_B --> MOD_B
+    CE_B --> MOD_B
+    CSN_C --> MOD_C
+    CE_C --> MOD_C
+    CSN_D --> MOD_D
+    CE_D --> MOD_D
+
+    CSN_CC --> MOD_CC
+    GDO0_CC --> MOD_CC
+    GDO2_CC --> MOD_CC
+
+    I2C_SDA --> MOD_OLED
+    I2C_SCL --> MOD_OLED
 ```
 
-### Wiring Table:
+### Wiring Table (ESP32 DevKit V1):
 | Component | Signal | ESP32 GPIO | Notes |
 |---|---|---|---|
 | **Shared SPI Bus** | SCK | `GPIO 18` | Hardware VSPI SCK |
@@ -100,36 +199,46 @@ The ESP32-C3 SuperMini is an ultra-small single-core RISC-V board ideal for buil
 
 ## Profile 3: ESP32-S3 DevKit (Dual-Core LX7)
 
-### Wiring Table:
-| Component | Signal | ESP32-S3 GPIO |
-|---|---|---|
-| **Shared SPI Bus** | SCK | `GPIO 12` |
-| | MISO | `GPIO 13` |
-| | MOSI | `GPIO 11` |
-| **nRF24 #1 (A)** | CE | `GPIO 10` |
-| | CSN | `GPIO 9` |
-| **nRF24 #2 (B)** | CE | `GPIO 4` |
-| | CSN | `GPIO 5` |
-| **nRF24 #3 (C)** | CE | `GPIO 6` |
-| | CSN | `GPIO 7` |
-| **nRF24 #4 (D)** | CE | `GPIO 15` |
-| | CSN | `GPIO 16` |
-| **CC1101 Sub-GHz** | CSN | `GPIO 17` |
-| | GDO0 | `GPIO 18` |
-| | GDO2 | `GPIO 8` |
-| **I2C Display** | SDA | `GPIO 1` |
-| | SCL | `GPIO 2` |
+### Wiring Table (ESP32-S3):
+| Component | Signal | ESP32-S3 GPIO | Description |
+|---|---|---|---|
+| **Shared SPI Bus** | SCK | `GPIO 12` | Hardware FSPI Clock |
+| | MISO | `GPIO 13` | Hardware FSPI MISO |
+| | MOSI | `GPIO 11` | Hardware FSPI MOSI |
+| **nRF24 #1 (A)** | CE / CSN | `GPIO 10` / `GPIO 9` | Radio #1 |
+| **nRF24 #2 (B)** | CE / CSN | `GPIO 4` / `GPIO 5` | Radio #2 |
+| **nRF24 #3 (C)** | CE / CSN | `GPIO 6` / `GPIO 7` | Radio #3 |
+| **nRF24 #4 (D)** | CE / CSN | `GPIO 15` / `GPIO 16`| Radio #4 |
+| **CC1101 Sub-GHz** | CSN / GDO0 / GDO2 | `GPIO 17` / `GPIO 18` / `GPIO 8` | Sub-GHz Module |
+| **I2C Display** | SDA / SCL | `GPIO 1` / `GPIO 2` | OLED / Color Display |
 
 ---
 
-## nRF24L01+ Module Pinout Reference
+## nRF24L01+ Module Pinout Diagram
 
-```
-         nRF24L01+ 8-Pin Header (Top View, Antenna Facing UP)
-                          +-------+
-                  GND [1] | o   o | [2] VCC (3.3V ONLY!)
-                   CE [3] | o   o | [4] CSN
-                  SCK [5] | o   o | [6] MOSI
-                 MISO [7] | o   o | [8] IRQ (Not used)
-                          +-------+
+```mermaid
+flowchart TD
+    subgraph NRF24_PINOUT ["nRF24L01+ 2x4 Header (Top View)"]
+        direction TB
+        subgraph ROW1 ["Top Row"]
+            direction LR
+            P1["Pin 1: GND"]
+            P2["Pin 2: VCC (3.3V ONLY!)"]
+        end
+        subgraph ROW2 ["Second Row"]
+            direction LR
+            P3["Pin 3: CE (Chip Enable)"]
+            P4["Pin 4: CSN (Chip Select Not)"]
+        end
+        subgraph ROW3 ["Third Row"]
+            direction LR
+            P5["Pin 5: SCK (SPI Clock)"]
+            P6["Pin 6: MOSI (SPI Data In)"]
+        end
+        subgraph ROW4 ["Bottom Row"]
+            direction LR
+            P7["Pin 7: MISO (SPI Data Out)"]
+            P8["Pin 8: IRQ (Not Connected)"]
+        end
+    end
 ```

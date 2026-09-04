@@ -17,39 +17,81 @@ ESP32-RF-SWORD hosts a standalone, responsive cyber-themed Single Page Applicati
 
 ---
 
-## Web Dashboard Features
+## Web Dashboard Architecture & Layout
 
-```
-+-------------------------------------------------------------------------+
-| [⚔] ESP32-RF-SWORD [v2.5.0 PRO]              [● CONNECTED] [UP: 00:14:32] |
-+-------------------------------------------------------------------------+
-| [ ACTIVE MODE ]   [ HOP RATE ]    [ PACKET RATE ]   [ POWER ]   [ HEAP ] |
-| SWEEP_COPRIME     6,520 hops/s    1,240 pkt/s       MAX (0dBm)  194 KB   |
-+-----------------------------------+-------------------------------------+
-| 2.4 GHz REAL-TIME WATERFALL       | CONTROL DECK                        |
-|                                   | +---------------------------------+ |
-|  [##############################] | |       [ STOP ATTACK ]           | |
-|  [..............................] | +---------------------------------+ |
-|  [2400MHz      2440MHz   2480MHz] | Mode: [ 2.4GHz Coprime Sweeper  ] |
-|                                   | Preset: [ BLE Advertisement     ] |
-| RADIO STATUS                      | Channel Range: Ch 2 -> Ch 80      |
-| [R1] Ch 42 (2442 MHz) [=======--] | Dwell Jitter: 120 - 180 us        |
-| [R2] Ch 81 (2481 MHz) [========-] | Power: [MIN] [LOW] [HIGH] [MAX]   |
-+-----------------------------------+-------------------------------------+
-| SYSTEM AUDIT LOG                                                        |
-| [14:32:01] [OK][WS] WebSocket connected. Telemetry stream active.       |
-+-------------------------------------------------------------------------+
+```mermaid
+flowchart TD
+    subgraph WEB_DASHBOARD ["ESP32-RF-SWORD Cyberpunk Web Portal"]
+        subgraph HEADER ["Top Navigation & Status Bar"]
+            BRAND["⚔️ ESP32-RF-SWORD v2.5.0 PRO"]
+            STATUS["● WS Status: CONNECTED"]
+            UPTIME["⏱️ Uptime Counter"]
+        end
+
+        subgraph METRICS ["Real-Time Metric Cards"]
+            M_MODE["Active Mode"]
+            M_HOPS["Hop Rate (hops/s)"]
+            M_PKT["Packet Rate (pkt/s)"]
+            M_PWR["Power Level"]
+            M_RAD["Radio Count"]
+            M_HEALTH["Temp / Heap RAM"]
+        end
+
+        subgraph MAIN_BODY ["Live View & Control Deck"]
+            subgraph LEFT_PANEL ["Spectrum Visualizer"]
+                CANVAS["📊 60 FPS HTML5 Canvas Waterfall / 2D Spectrum"]
+                GAUGES["📡 Multi-Radio Frequency Gauges (R1 - R4)"]
+            end
+            subgraph RIGHT_PANEL ["Control Deck"]
+                MASTER_BTN["🔴 MASTER START / STOP BUTTON"]
+                MODE_SEL["Operation Mode Selector"]
+                PRESET_SEL["Protocol Preset Selector"]
+                CHAN_SLIDER["RF Channel Range Sliders (0 - 125)"]
+                DWELL_SLIDER["Dwell Jitter Sliders (10 - 2000 µs)"]
+                PWR_SEG["Power Selector (MIN / LOW / HIGH / MAX)"]
+                FLASH_ACTIONS["💾 Save to Flash & Reboot"]
+            end
+        end
+
+        subgraph LOG_VIEW ["System Audit Console"]
+            LOG_STREAM["📝 Live WebSocket Terminal Log Stream"]
+        end
+    end
 ```
 
-1. **Real-Time Waterfall & Spectrum Chart**:
-   - 60 FPS HTML5 Canvas waterfall rendering showing 128 channels simultaneously.
-   - Toggle between 2D spectrum line graph and waterfall heatmap.
-2. **Dynamic Sliders & Controls**:
-   - Instantly adjust channel bounds, hop dwell times, output power, and attack presets without rebooting.
-3. **Multi-Radio HUD**:
-   - Real-time frequency gauges for up to 4 nRF24 radios and Sub-GHz CC1101 module.
-4. **NVS Flash Synchronization**:
-   - Click **Save to Flash** to persist current configuration across power cycles.
+---
+
+## WebSocket Lifecycle & Communication Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Researcher Browser
+    participant Captive as Captive Portal / DNS
+    participant WebSrv as AsyncWebServer (Port 80)
+    participant WS as WebSocket (/ws @ 10 Hz)
+    participant Core as SystemState & RF Coordinator
+
+    User->>Captive: Connect to Wi-Fi SSID 'SWORD-SECURITY-PORTAL'
+    Captive-->>User: Redirect to http://192.168.4.1/
+    User->>WebSrv: HTTP GET /
+    WebSrv-->>User: 200 OK (Inlined Web UI Bundle)
+    User->>WS: WebSocket Connect (ws://192.168.4.1/ws)
+    WS-->>User: WS Handshake Accepted
+
+    loop Every 100ms (10 Hz Telemetry Stream)
+        Core->>WS: Read Telemetry, Radios & 128-Ch Spectrum
+        WS-->>User: JSON { type: "telemetry", telemetry: {...}, radios: [...], spectrum: [...] }
+        User->>User: Render 60 FPS Canvas Waterfall & Gauges
+    end
+
+    opt User Triggered Action
+        User->>WS: JSON { action: "set_mode", mode: "SWEEP_COPRIME" }
+        WS->>Core: Update Mode & Reconfigure Radios
+        Core-->>WS: Emit Audit Log
+        WS-->>User: JSON { type: "log", msg: "Mode switched to SWEEP_COPRIME", level: "info" }
+    end
+```
 
 ---
 
