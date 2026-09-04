@@ -7,6 +7,7 @@
 
 #include "core/NVSManager.h"
 #include "core/Logger.h"
+#include "Config.h"
 #include <string.h>
 
 #ifndef HOST_SIMULATION

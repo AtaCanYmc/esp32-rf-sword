@@ -79,7 +79,7 @@ void WebServerManager::handleDNS() {
 void WebServerManager::setupRoutes() {
     // Serve Web UI Single Page Application
     server->on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
-        request->send_P(200, "text/html", WebAssets::getIndexHtml());
+        request->send(200, "text/html", WebAssets::getIndexHtml());
     });
 
     // Captive Portal Detection Endpoints

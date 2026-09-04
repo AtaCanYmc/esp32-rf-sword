@@ -10,6 +10,7 @@
 #include "core/NVSManager.h"
 #include "core/Logger.h"
 #include "hal/BoardProfiles.h"
+#include "radio/ChannelMath.h"
 #include "attack/AttackCoordinator.h"
 #include "attack/Presets.h"
 #include "analyzer/SpectrumScanner.h"
