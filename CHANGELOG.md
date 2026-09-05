@@ -4,6 +4,26 @@ All notable changes to the **ESP32-RF-SWORD** framework will be documented in th
 
 ---
 
+## [0.2.0](https://github.com/AtaCanYmc/esp32-rf-sword/compare/v0.1.0...v0.2.0) (2026-09-05)
+
+
+### Features
+
+* **ci:** add Dependabot and Google Release-Please automation workflows ([2829f66](https://github.com/AtaCanYmc/esp32-rf-sword/commit/2829f663937d3ee40ec3b5f695c0f957defd7602))
+* **docs:** add visual banner and fix repository CI badge URLs ([ebe32d7](https://github.com/AtaCanYmc/esp32-rf-sword/commit/ebe32d7b2e59720f948004653dafb339297cf35d))
+* **flasher:** install favicons and web app manifest from RealFaviconGenerator ([58e901c](https://github.com/AtaCanYmc/esp32-rf-sword/commit/58e901cfd8ef11230c8ca4a0411b8c02a30789c7))
+
+
+### Bug Fixes
+
+* **build:** add pioarduino and dual-stack NimBLE support for ESP32-C6 ([01c769e](https://github.com/AtaCanYmc/esp32-rf-sword/commit/01c769e237ff4e885096eb3217fc5373ec02aa0e))
+
+
+### Chores & Maintenance
+
+* **deps:** apply dependabot updates and configure grouped PRs ([a5f21e5](https://github.com/AtaCanYmc/esp32-rf-sword/commit/a5f21e5edeadb88050698d7c7cbfa26c52158fd0))
+* set initial release version to 0.1.0 ([9a17486](https://github.com/AtaCanYmc/esp32-rf-sword/commit/9a17486ac5de41bfe69e7001575edf090d7072a5))
+
 ## [0.1.0] - 2026-09-05 (Initial Release - Complete Re-Architecture from RF-KILL)
 
 ### Added
