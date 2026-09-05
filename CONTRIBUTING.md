@@ -8,7 +8,7 @@ We welcome contributions from the RF research, embedded systems, and security co
 
 1. **Fork and Clone** the repository:
    ```bash
-   git clone https://github.com/your-username/esp32-rf-sword.git
+   git clone https://github.com/AtaCanYmc/esp32-rf-sword.git
    cd esp32-rf-sword
    ```
 

@@ -1,23 +1,22 @@
-```text
-  ███████╗███████╗██████╗ ██████╗ ██████╗         ██████╗ ███████╗    ███████╗██╗    ██╗ ██████╗ ██████╗ ██████╗ 
-  ██╔════╝██╔════╝██╔══██╗╚════██╗╚════██╗        ██╔══██╗██╔════╝    ██╔════╝██║    ██║██╔═══██╗██╔══██╗██╔══██╗
-  █████╗  ███████╗██████╔╝ █████╔╝ █████╔╝█████╗  ██████╔╝█████╗      ███████╗██║ █╗ ██║██║   ██║██████╔╝██║  ██║
-  ██╔══╝  ╚════██║██╔═══╝  ╚═══██╗██╔═══╝ ╚════╝  ██╔══██╗██╔══╝      ╚════██║██║███╗██║██║   ██║██╔══██╗██║  ██║
-  ███████╗███████║██║     ██████╔╝███████╗        ██║  ██║██║         ███████║╚███╔███╔╝╚██████╔╝██║  ██║██████╔╝
-  ╚══════╝╚══════╝╚═╝     ╚═════╝ ╚══════╝        ╚═╝  ╚═╝╚═╝         ╚══════╝ ╚══╝╚══╝  ╚═════╝ ╚═╝  ╚═╝╚═════╝ 
-                      ⚔️ [ ADVANCED MULTI-BAND RF SECURITY & RESEARCH TOOLKIT ] ⚔️
-```
+<p align="center">
+  <img src="docs/assets/banner.png" alt="ESP32-RF-SWORD Banner" width="100%">
+</p>
 
-# ESP32-RF-SWORD ⚔️
+<h1 align="center">⚔️ ESP32-RF-SWORD</h1>
+<p align="center">
+  <strong>Industrial-Grade Multi-Band RF Security Research, Spectrum Analysis & Transmission Toolkit</strong>
+</p>
 
-[![CI Build](https://github.com/your-username/esp32-rf-sword/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/esp32-rf-sword/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/Version-0.1.0-00f0ff.svg?style=for-the-badge)](https://github.com/your-username/esp32-rf-sword)
-[![Web Flasher](https://img.shields.io/badge/Web_Flasher-1--Click_Install-FF3366.svg?style=for-the-badge&logo=googlechrome)](flasher/index.html)
-[![Framework](https://img.shields.io/badge/Framework-Arduino_%2F_ESP--IDF-00979D.svg?style=for-the-badge&logo=espressif)](https://espressif.com)
-[![PlatformIO](https://img.shields.io/badge/PlatformIO-Supported-orange.svg?style=for-the-badge&logo=platformio)](https://platformio.org)
-[![Hardware](https://img.shields.io/badge/Hardware-ESP32_%7C_C3_%7C_S3_%7C_C6-2F80ED.svg?style=for-the-badge)](docs/PINOUTS.md)
-[![Radios](https://img.shields.io/badge/Radios-Dual%2FQuad_nRF24_%2B_CC1101_%2B_Native_Wi--Fi%2FBLE-FF9500.svg?style=for-the-badge)](docs/FREQUENCY_GUIDE.md)
-[![License](https://img.shields.io/badge/License-MIT-35C759.svg?style=for-the-badge)](LICENSE)
+<p align="center">
+  <a href="https://github.com/AtaCanYmc/esp32-rf-sword/actions/workflows/ci.yml"><img src="https://github.com/AtaCanYmc/esp32-rf-sword/actions/workflows/ci.yml/badge.svg" alt="CI Build"></a>
+  <a href="https://github.com/AtaCanYmc/esp32-rf-sword"><img src="https://img.shields.io/badge/Version-0.1.0-00f0ff.svg?style=for-the-badge" alt="Version"></a>
+  <a href="https://atacanymc.github.io/esp32-rf-sword/"><img src="https://img.shields.io/badge/Web_Flasher-1--Click_Install-FF3366.svg?style=for-the-badge&logo=googlechrome" alt="Web Flasher"></a>
+  <a href="https://espressif.com"><img src="https://img.shields.io/badge/Framework-Arduino_%2F_ESP--IDF-00979D.svg?style=for-the-badge&logo=espressif" alt="Framework"></a>
+  <a href="https://platformio.org"><img src="https://img.shields.io/badge/PlatformIO-Supported-orange.svg?style=for-the-badge&logo=platformio" alt="PlatformIO"></a>
+  <a href="docs/PINOUTS.md"><img src="https://img.shields.io/badge/Hardware-ESP32_%7C_C3_%7C_S3_%7C_C6-2F80ED.svg?style=for-the-badge" alt="Hardware"></a>
+  <a href="docs/FREQUENCY_GUIDE.md"><img src="https://img.shields.io/badge/Radios-Dual%2FQuad_nRF24_%2B_CC1101_%2B_Native_Wi--Fi%2FBLE-FF9500.svg?style=for-the-badge" alt="Radios"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-35C759.svg?style=for-the-badge" alt="License"></a>
+</p>
 
 > **ESP32-RF-SWORD** is an advanced, industrial-grade multi-band radio frequency (RF) security research, spectrum analysis, and signal transmission framework built for the ESP32 family (ESP32 Classic / ESP32-S3 / ESP32-C3 / ESP32-C6).
 >
@@ -232,7 +231,7 @@ sword > status
 
 ### Step 1: Clone Repository
 ```bash
-git clone https://github.com/your-username/esp32-rf-sword.git
+git clone https://github.com/AtaCanYmc/esp32-rf-sword.git
 cd esp32-rf-sword
 ```
 
