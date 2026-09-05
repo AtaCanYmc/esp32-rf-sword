@@ -88,7 +88,7 @@ jobs:
           pip install --upgrade platformio esptool
 
       - name: 💾 Cache PlatformIO Core & Packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.platformio
