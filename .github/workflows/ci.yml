@@ -107,7 +107,7 @@ jobs:
           python3 scripts/merge_bin.py -e ${{ matrix.env }} -o dist
 
       - name: 📤 Upload Build Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: esp32-rf-sword-${{ matrix.env }}-binaries
           path: |
