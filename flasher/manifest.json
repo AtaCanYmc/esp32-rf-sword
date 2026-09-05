@@ -1,6 +1,6 @@
 {
   "name": "ESP32-RF-SWORD",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "home_assistant_domain": "esphome",
   "new_install_prompt_erase": true,
   "builds": [
