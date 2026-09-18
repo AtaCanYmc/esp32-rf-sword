@@ -4,6 +4,13 @@ All notable changes to the **ESP32-RF-SWORD** framework will be documented in th
 
 ---
 
+## [0.2.1](https://github.com/AtaCanYmc/esp32-rf-sword/compare/v0.2.0...v0.2.1) (2026-09-18)
+
+
+### Documentation
+
+* overhaul repository governance and documentation to production standard ([8c27b45](https://github.com/AtaCanYmc/esp32-rf-sword/commit/8c27b4547361da7e72d473c8cdd8d5c17853cd88))
+
 ## [0.2.0](https://github.com/AtaCanYmc/esp32-rf-sword/compare/v0.1.0...v0.2.0) (2026-09-05)
 
 
