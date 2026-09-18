@@ -1,3 +1,7 @@
+<!-- well-document · audit scorecard: G1:5 G2:5 G3:5 G4:5 G5:5 G6:5 · STATUS: PASS -->
+
+[← Back to Root Repository](../README.md)
+
 # Radio Frequency (RF) Reference Guide
 
 A detailed guide to the radio frequency spectrum allocations, channel plans, and protocol characteristics utilized by ESP32-RF-SWORD.

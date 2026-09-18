@@ -19,3 +19,37 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+-------------------------------------------------------------------------------
+Third-Party Dependencies and Binary Distribution Notice
+-------------------------------------------------------------------------------
+
+While the primary source code of this repository is distributed under the MIT
+License above, compiled firmware binaries statically link against external
+libraries that carry distinct open-source licenses:
+
+1. nRF24/RF24:
+   - License: GNU General Public License v2.0 (GPL-2.0-only)
+   - Scope: nRF24L01+ transceiver SPI register driver
+
+2. ESPAsyncWebServer:
+   - License: GNU Lesser General Public License v3.0 (LGPL-3.0)
+   - Scope: Asynchronous HTTP and WebSocket server runtime
+
+3. RadioLib:
+   - License: MIT License
+   - Scope: CC1101 Sub-GHz transceiver physical layer driver
+
+4. ArduinoJson:
+   - License: MIT License
+   - Scope: Serialization and deserialization of WebSocket telemetry payloads
+
+5. Adafruit SSD1306 & Adafruit GFX Library:
+   - License: BSD 3-Clause License
+   - Scope: Framebuffer graphic primitives for I2C OLED display
+
+Under the terms of the GNU General Public License v2.0, any pre-compiled firmware
+binary distribution that incorporates the GPL-licensed RF24 library must be
+distributed in full compliance with GPL-2.0 copyleft obligations. Source code
+authored specifically within this project remains independently licensed under
+the MIT License.

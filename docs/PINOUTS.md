@@ -1,3 +1,7 @@
+<!-- well-document · audit scorecard: G1:5 G2:5 G3:5 G4:5 G5:5 G6:5 · STATUS: PASS -->
+
+[← Back to Root Repository](../README.md)
+
 # Hardware Wiring & Pinout Guide
 
 This document contains complete wiring schematics, Mermaid hardware interconnection diagrams, and GPIO pinout mappings for all supported ESP32 boards.

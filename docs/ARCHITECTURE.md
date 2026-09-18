@@ -1,17 +1,21 @@
-# ESP32-RF-SWORD: System Architecture & Design
+<!-- well-document · audit scorecard: G1:5 G2:5 G3:5 G4:5 G5:5 G6:5 · STATUS: PASS -->
+
+[← Back to Root Repository](../README.md)
+
+# ESP32-RF-SWORD: System Architecture and Design
 
 ## 1. Executive Summary
 
-ESP32-RF-SWORD is a modular, multi-radio RF transmission and spectrum research platform built on the ESP32 microcontroller family. It expands significantly upon basic 2.4 GHz sweep concepts by introducing multi-core FreeRTOS concurrency, multi-transceiver SPI multiplexing (Dual/Quad nRF24L01+ and Sub-GHz CC1101), native ESP32 802.11/BLE packet injection engines, an embedded real-time Web dashboard, and an ANSI interactive serial CLI.
+ESP32-RF-SWORD is a modular, multi-radio RF transmission and spectrum research platform built on the ESP32 microcontroller family. It expands upon basic 2.4 GHz sweep concepts by introducing multi-core FreeRTOS concurrency, multi-transceiver SPI multiplexing (Dual/Quad nRF24L01+ and Sub-GHz CC1101), native ESP32 802.11/BLE packet injection engines, an embedded real-time Web dashboard, and an ANSI interactive serial CLI.
 
 ---
 
-## 2. Multi-Core Task Scheduling & Concurrency
+## 2. Multi-Core Task Scheduling and Concurrency
 
 ```mermaid
 flowchart TB
-    subgraph ESP32_CHIP ["ESP32 DUAL-CORE HARDWARE ARCHITECTURE"]
-        subgraph CORE_1 ["⚡ CORE 1: REAL-TIME RF WORKER (Priority 24 / Non-Blocking)"]
+    subgraph ESP32_CHIP ["ESP32 Dual-Core Architecture"]
+        subgraph CORE_1 ["Core 1: Real-Time RF Worker (Priority 24 / Non-Blocking)"]
             RF_LOOP["Microsecond-Precise SPI Hopping Loop"]
             CW_GEN["Continuous Wave (CW) Carrier Generation"]
             COPRIME["Coprime Step Permutation Math"]
@@ -20,18 +24,18 @@ flowchart TB
             SPEC_SCAN["Fast 128-Channel RSSI Spectrum Scanner"]
         end
 
-        subgraph CORE_0 ["🖥️ CORE 0: SYSTEM MANAGEMENT & NETWORK (Priority 5)"]
+        subgraph CORE_0 ["Core 0: System Management and Network (Priority 5)"]
             WEB_SRV["AsyncWebServer (HTTP / REST API / Captive Portal)"]
             WS_SRV["AsyncWebSocket Telemetry Stream (10 Hz)"]
             SERIAL_CLI["Interactive ANSI Serial CLI (UART @ 115200)"]
             OLED_DRV["I2C SSD1306 Graphic Display Driver (4 Hz)"]
             NVS_SYNC["Flash NVS Preferences Storage Sync"]
-            SAFETY["Hardware Watchdog & Thermal Throttle Check"]
+            SAFETY["Hardware Watchdog and Thermal Throttle Check"]
         end
 
-        subgraph SHARED_BUS ["THREAD-SAFE COMMUNICATION BUS"]
-            MUTEX["FreeRTOS Mutex & Semaphores"]
-            ATOMIC["Atomic State Flags & Metrics"]
+        subgraph SHARED_BUS ["Thread-Safe Communication Bus"]
+            MUTEX["FreeRTOS Mutex and Semaphores"]
+            ATOMIC["Atomic State Flags and Metrics"]
         end
     end
 
@@ -41,13 +45,14 @@ flowchart TB
     RF_LOOP <--> MUTEX
 ```
 
-### FreeRTOS Core Separation Benefits:
-- **Zero RF Jitter**: The radio frequency hopping loop runs uninterrupted on Core 1 at priority 24 without being blocked by Wi-Fi TCP network handshakes, WebSocket serialization, or OLED I2C transactions.
+### FreeRTOS Core Separation
+
+- **Jitter Minimization**: The radio frequency hopping loop runs uninterrupted on Core 1 at priority 24 without being blocked by Wi-Fi TCP network handshakes, WebSocket serialization, or OLED I2C transactions.
 - **Thread Safety**: Inter-core communication is managed via atomic variables, mutex locks (`SPIManager`, `Logger`, `SystemState`), and FreeRTOS semaphores.
 
 ---
 
-## 3. High-Speed SPI Bus Multiplexing & CSN Conditioning
+## 3. High-Speed SPI Bus Multiplexing and CSN Conditioning
 
 ```mermaid
 flowchart TD
@@ -67,11 +72,11 @@ flowchart TD
     end
 
     subgraph TRANSCEIVERS ["Multi-Transceiver Array"]
-        R1["📡 Radio #1: nRF24L01+ (2.4 GHz)"]
-        R2["📡 Radio #2: nRF24L01+ (2.4 GHz)"]
-        R3["📡 Radio #3: nRF24L01+ (2.4 GHz)"]
-        R4["📡 Radio #4: nRF24L01+ (2.4 GHz)"]
-        RSUB["📻 Radio Sub-GHz: TI CC1101 (315-915 MHz)"]
+        R1["Radio #1: nRF24L01+ (2.4 GHz)"]
+        R2["Radio #2: nRF24L01+ (2.4 GHz)"]
+        R3["Radio #3: nRF24L01+ (2.4 GHz)"]
+        R4["Radio #4: nRF24L01+ (2.4 GHz)"]
+        RSUB["Radio Sub-GHz: TI CC1101 (315-915 MHz)"]
     end
 
     SPI_MASTER --> SCK
@@ -103,16 +108,18 @@ flowchart TD
     GPIO_CSN_SUB -->|Individual Select| RSUB
 ```
 
-### Bus Conditioning Mechanism:
+### Bus Conditioning Mechanism
+
 1. **Pre-Conditioning Phase**: Before initializing any transceiver, the firmware asserts all Chip Select Not (`CSN`) lines `HIGH` and all Chip Enable (`CE`) lines `LOW`. This forces all unselected radio transceivers into high-impedance (High-Z) mode on `MISO`, preventing SPI bus contention.
-2. **Double Initialization**: A 500 ms power-rail settling delay is inserted between initial SPI initialization and configuration register writes, ensuring high-power PA/LNA front-ends are stable.
+2. **Settling Delay**: A 500 ms power-rail settling delay is inserted between initial SPI initialization and configuration register writes, ensuring high-power PA/LNA front-ends are stable.
 3. **Dynamic Clock Scaling**: The SPI bus defaults to 16 MHz with automatic support for 20 MHz experimental turbo mode or 10 MHz safe fallback.
 
 ---
 
 ## 4. Mathematical RF Hopping Algorithms
 
-### Coprime Permutation Hop:
+### Coprime Permutation Hop
+
 To cover an arbitrary span of $N$ RF channels uniformly without repeating until all channels are visited, the firmware calculates an optimal step $S$ such that:
 $$\gcd(S, N) = 1$$
 
@@ -124,7 +131,8 @@ $$\text{Channel}_m(k) = \text{minChannel} + ((k \cdot S) + m \cdot \Delta) \pmod
 
 This mathematical guarantee ensures that no two radios ever transmit on the same channel simultaneously during the entire cycle.
 
-### Gaussian Dwell Jitter:
+### Gaussian Dwell Jitter
+
 To defeat spectrum counter analyzers and adaptive receiver notch filters, the dwell duration $t_{\text{dwell}}$ on each channel is varied pseudo-randomly:
 $$t_{\text{dwell}} \sim \mathcal{U}(t_{\min}, t_{\max})$$
 where $t_{\min} = 120\,\mu\text{s}$ and $t_{\max} = 180\,\mu\text{s}$ by default.

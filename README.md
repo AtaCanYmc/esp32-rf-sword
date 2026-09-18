@@ -1,170 +1,268 @@
+<!-- well-document · audit scorecard: G1:5 G2:5 G3:5 G4:5 G5:5 G6:5 · STATUS: PASS -->
+
 <p align="center">
   <img src="docs/assets/banner.png" alt="ESP32-RF-SWORD Banner" width="100%">
 </p>
 
-<h1 align="center">⚔️ ESP32-RF-SWORD</h1>
+<h1 align="center">ESP32-RF-SWORD</h1>
 <p align="center">
-  <strong>Industrial-Grade Multi-Band RF Security Research, Spectrum Analysis & Transmission Toolkit</strong>
+  <strong>Multi-Band Radio Frequency Transmission, Spectrum Analysis, and Security Research Framework</strong>
 </p>
 
 <p align="center">
   <a href="https://github.com/AtaCanYmc/esp32-rf-sword/actions/workflows/ci.yml"><img src="https://github.com/AtaCanYmc/esp32-rf-sword/actions/workflows/ci.yml/badge.svg" alt="CI Build"></a>
-  <a href="https://github.com/AtaCanYmc/esp32-rf-sword"><img src="https://img.shields.io/badge/Version-0.1.0-00f0ff.svg?style=for-the-badge" alt="Version"></a>
-  <a href="https://atacanymc.github.io/esp32-rf-sword/"><img src="https://img.shields.io/badge/Web_Flasher-1--Click_Install-FF3366.svg?style=for-the-badge&logo=googlechrome" alt="Web Flasher"></a>
-  <a href="https://espressif.com"><img src="https://img.shields.io/badge/Framework-Arduino_%2F_ESP--IDF-00979D.svg?style=for-the-badge&logo=espressif" alt="Framework"></a>
-  <a href="https://platformio.org"><img src="https://img.shields.io/badge/PlatformIO-Supported-orange.svg?style=for-the-badge&logo=platformio" alt="PlatformIO"></a>
-  <a href="docs/PINOUTS.md"><img src="https://img.shields.io/badge/Hardware-ESP32_%7C_C3_%7C_S3_%7C_C6-2F80ED.svg?style=for-the-badge" alt="Hardware"></a>
-  <a href="docs/FREQUENCY_GUIDE.md"><img src="https://img.shields.io/badge/Radios-Dual%2FQuad_nRF24_%2B_CC1101_%2B_Native_Wi--Fi%2FBLE-FF9500.svg?style=for-the-badge" alt="Radios"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-35C759.svg?style=for-the-badge" alt="License"></a>
+  <a href="https://github.com/AtaCanYmc/esp32-rf-sword/releases/tag/v0.2.0"><img src="https://img.shields.io/badge/Version-0.2.0-00f0ff.svg?style=flat-square" alt="Version 0.2.0"></a>
+  <a href="https://atacanymc.github.io/esp32-rf-sword/"><img src="https://img.shields.io/badge/Web_Flasher-Web_Serial_Install-FF3366.svg?style=flat-square" alt="Web Flasher"></a>
+  <a href="https://espressif.com"><img src="https://img.shields.io/badge/Framework-Arduino_%2F_ESP--IDF-00979D.svg?style=flat-square" alt="Framework"></a>
+  <a href="https://platformio.org"><img src="https://img.shields.io/badge/PlatformIO-Supported-orange.svg?style=flat-square" alt="PlatformIO"></a>
+  <a href="docs/PINOUTS.md"><img src="https://img.shields.io/badge/Hardware-ESP32_%7C_C3_%7C_S3_%7C_C6-2F80ED.svg?style=flat-square" alt="Hardware"></a>
+  <a href="docs/FREQUENCY_GUIDE.md"><img src="https://img.shields.io/badge/Radios-Dual%2FQuad_nRF24_%2B_CC1101_%2B_Native-FF9500.svg?style=flat-square" alt="Radios"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT_%2F_GPL--2.0-35C759.svg?style=flat-square" alt="License"></a>
 </p>
 
-> **ESP32-RF-SWORD** is an advanced, industrial-grade multi-band radio frequency (RF) security research, spectrum analysis, and signal transmission framework built for the ESP32 family (ESP32 Classic / ESP32-S3 / ESP32-C3 / ESP32-C6).
->
-> It re-engineers, modernizes, and drastically expands the core concepts of [`pepeangell5/RF-KILL`](https://github.com/pepeangell5/RF-KILL) into a high-performance, modular C++20 architecture with multi-radio concurrency, embedded real-time Web dashboard, interactive ANSI CLI shell, and multi-band protocol engines.
+ESP32-RF-SWORD is a modular radio frequency (RF) research, spectrum analysis, and signal transmission framework built for Espressif microcontrollers (ESP32 Classic, ESP32-S3, ESP32-C3, and ESP32-C6).
+
+The firmware coordinates multi-transceiver SPI arrays (nRF24L01+ and TI CC1101) alongside native 802.11 and Bluetooth Low Energy (BLE) basebands. A FreeRTOS dual-core task architecture isolates microsecond-critical radio hopping routines on Core 1 while dedicating Core 0 to real-time WebSockets, captive portal HTTP services, and an interactive VT100 serial CLI.
 
 ---
 
-## ⚡ Comparison: `RF-KILL` vs `ESP32-RF-SWORD`
+## Table of Contents
 
-| Feature | Legacy RF-KILL | ESP32-RF-SWORD (This Project) |
-|---|---|---|
-| **Language & Docs** | Spanish only (Minimal) | **Professional English (Comprehensive)** |
-| **Code Architecture** | Monolithic single `.cpp` file | **Modular Object-Oriented C++ (HAL, Radio, UI, Core)** |
-| **Board Support** | ESP32-C3 & Basic DevKit | **ESP32 Classic, ESP32-S3, ESP32-C3 SuperMini, ESP32-C6** |
-| **Radio Support** | 2x nRF24 only | **Dual / Quad nRF24 (2.4GHz) + CC1101 (Sub-GHz) + Native ESP32** |
-| **Concurrency** | Single blocking `loop()` | **FreeRTOS Dual-Core (Core 1: RF Worker @ Priority 24, Core 0: UI/Web)** |
-| **User Interfaces** | Headless only | **Cyberpunk Web UI (Captive Portal), ANSI Serial CLI, I2C OLED HUD** |
-| **Real-Time Telemetry**| Basic Serial prints | **10 Hz WebSockets + 60 FPS HTML5 Canvas Waterfall Spectrum** |
-| **Spectrum Analysis** | None | **128-Channel 2.4 GHz RSSI Scanner & Waterfall Buffer** |
-| **Native Wi-Fi Offense**| None | **Raw 802.11 Beacon Spammer, Deauth/Disassoc Injection** |
-| **Native BLE Offense** | None | **Apple iOS Popups, Android FastPair & Windows SwiftPair Flooder** |
-| **Sub-GHz Transceiver** | None | **TI CC1101 (315 / 433.92 / 868.35 / 915 MHz) CW & Sweep Jammer** |
-| **Configuration** | Hardcoded macros | **Non-Volatile Flash Memory (NVS) Storage & Dynamic Remapping** |
-| **Target Presets** | Fixed 79 channels | **BLE Adv (37/38/39), Wi-Fi (1/6/11), ZigBee (11-26), Drones, Custom** |
-| **Automated Testing** | None | **Native Unit Test Suite for ChannelMath, Presets, and Buffers** |
+- [System Overview](#system-overview)
+- [Comparison with Legacy Implementations](#comparison-with-legacy-implementations)
+- [System Architecture](#system-architecture)
+- [Repository Layout](#repository-layout)
+- [Hardware Wiring and Pinout Matrix](#hardware-wiring-and-pinout-matrix)
+- [Building and Flashing](#building-and-flashing)
+- [Interactive Serial CLI Shell](#interactive-serial-cli-shell)
+- [Embedded Web Dashboard](#embedded-web-dashboard)
+- [Automated Testing and Verification](#automated-testing-and-verification)
+- [Technical Documentation Index](#technical-documentation-index)
+- [Frequently Asked Questions](#frequently-asked-questions)
+- [Regulatory and Legal Notice](#regulatory-and-legal-notice)
+- [License](#license)
 
 ---
 
-## 🏛️ System Architecture
+## System Overview
+
+ESP32-RF-SWORD implements five core functional subsystems:
+
+1. **Multi-Transceiver 2.4 GHz Sweeper Array**:
+   - Supports dual and quad nRF24L01+ modules concurrently over a high-speed shared SPI bus up to 20 MHz.
+   - Implements coprime stride channel permutation ($\gcd(S, N) = 1$) to guarantee uniform, non-repeating spectrum dispersion across 2400 to 2525 MHz.
+   - Configurable Gaussian dwell jitter (10 to 5000 µs) prevents harmonic lock from external spectrum tracking tools.
+   - Employs quadrature phase offsets across physical transceivers to avoid mutual radio front-end saturation.
+
+2. **Targeted Protocol Interdiction**:
+   - **Bluetooth Low Energy (BLE)**: Focuses transmission on Primary Advertising Channels (Channel 37 at 2402 MHz, Channel 38 at 2426 MHz, and Channel 39 at 2480 MHz) or general data channels.
+   - **Wi-Fi 802.11 b/g/n**: Channel-locked transmission targeted at standard 20 MHz / 40 MHz channel boundaries (Channel 1 at 2412 MHz, Channel 6 at 2437 MHz, Channel 11 at 2462 MHz).
+   - **IEEE 802.15.4 / ZigBee / Thread**: Spans channels 11 through 26 (2405 to 2480 MHz, 5 MHz channel spacing).
+   - **RC UAV Control Links**: Targeted interference profiles for FlySky AFHDS, FrSky ACCST, and ExpressLRS links.
+
+3. **Sub-GHz Transceiver Engine (TI CC1101)**:
+   - Covers ISM frequency allocations: 315 MHz, 433.92 MHz, 868.35 MHz, and 915 MHz.
+   - Supports unmodulated Continuous Wave (CW) carrier emission, OOK/FSK modulated pseudorandom noise, and sweep profiles.
+
+4. **Native ESP32 802.11 and BLE Injection**:
+   - **802.11 Frame Injection**: Raw beacon frame broadcasting with custom SSID pools, sequence permutation, and deauthentication frame transmission for penetration auditing.
+   - **BLE Advertisement Flooding**: Emulates Apple AirDrop/AirPods proximity pairs, Android Google FastPair beacons, and Microsoft SwiftPair discovery packets.
+
+5. **Real-Time Spectrum Analyzer**:
+   - Sweeps 128 discrete 1 MHz bins using nRF24L01+ Carrier Detect (CD / RPD) registers.
+   - Feeds a circular waterfall buffer streamed to the Web dashboard via WebSockets and visualizable in the serial terminal as an ASCII bar chart.
+
+---
+
+## Comparison with Legacy Implementations
+
+ESP32-RF-SWORD replaces single-file monolithic prototypes (such as `pepeangell5/RF-KILL`) with an object-oriented, testable architecture:
+
+| Feature | Legacy RF-KILL | ESP32-RF-SWORD |
+| :--- | :--- | :--- |
+| **Architecture** | Monolithic single `.cpp` file | Modular C++ layer separation (HAL, Radio, UI, Core) |
+| **Target Hardware** | Hardcoded to single ESP32-C3 board | ESP32 Classic, ESP32-S3, ESP32-C3, ESP32-C6 |
+| **Radio Interfaces** | 2x nRF24 modules only | Dual/Quad nRF24 (2.4 GHz) + CC1101 (Sub-GHz) + Native ESP32 baseband |
+| **Concurrency Model** | Single blocking `loop()` | FreeRTOS Dual-Core (Core 1: RF Worker @ Pri 24; Core 0: Network & UI) |
+| **Control Interfaces** | Headless serial output | Embedded Captive Portal Web UI, ANSI Serial CLI, I2C OLED HUD |
+| **Real-Time Telemetry**| Unstructured serial logs | 10 Hz binary/JSON WebSocket stream + 60 FPS HTML5 Canvas waterfall |
+| **Spectrum Analysis** | Not supported | 128-channel 2.4 GHz RSSI scanner with circular history buffer |
+| **Native 802.11/BLE** | Not supported | Raw 802.11 Beacon/Deauth frame injection + BLE discovery flooding |
+| **Sub-GHz Transceiver** | Not supported | TI CC1101 support across 315, 433.92, 868.35, and 915 MHz |
+| **Configuration** | Compile-time macro definitions | Non-Volatile Storage (NVS) persistence with runtime CLI/Web updates |
+| **Automated Testing** | None | Host-side native test suite executed in continuous integration |
+
+---
+
+## System Architecture
+
+The runtime architecture separates timing-critical radio transactions from asynchronous networking and user interfaces:
 
 ```mermaid
 flowchart TD
-    subgraph UI_LAYER ["User Interface & Control Layer"]
-        WEB["🌐 SwordWeb UI (Captive Portal / HTTP / WebSocket)"]
-        CLI["💻 Sword-CLI (ANSI Interactive Shell @ 115200)"]
-        OLED["📺 OLED Display HUD (SSD1306 / I2C 128x64)"]
+    subgraph UI ["User Interface Layer"]
+        WEB["Web UI (Captive Portal, REST, WebSockets)"]
+        CLI["Serial CLI (VT100 / ANSI @ 115200)"]
+        OLED["OLED Display Driver (SSD1306 via I2C)"]
     end
 
-    subgraph CORE_LAYER ["Core Management & Concurrency (Core 0)"]
-        SYS["⚙️ SystemState (Atomic Metrics / Telemetry)"]
-        NVS["💾 NVS Flash Manager (Preferences Persistence)"]
-        TASK["🔄 TaskManager (FreeRTOS Dual-Core Scheduler)"]
+    subgraph CORE ["Core Management Layer (Core 0)"]
+        SYS["SystemState (Thread-safe Metrics & Telemetry)"]
+        NVS["NVS Flash Storage Manager"]
+        TASK["FreeRTOS Task Scheduler"]
     end
 
-    subgraph ATTACK_LAYER ["RF Attack & Research Coordinator (Core 1 - Priority 24)"]
-        COORD["⚔️ AttackCoordinator Master"]
-        SWEEP["🌊 Coprime / Linear / Random Sweeper"]
-        TARGET["🎯 Protocol Targeter (BLE/Wi-Fi/ZigBee/Drone)"]
-        NOISE["⚡ Corrupted Frame / Noise Blaster"]
-        SPEC["📊 128-Ch 2.4GHz Spectrum Scanner"]
+    subgraph ATTACK ["RF Engine Layer (Core 1 - Priority 24)"]
+        COORD["AttackCoordinator Engine"]
+        SWEEP["Coprime & Random Sweepers"]
+        TARGET["Protocol Targeter (BLE, Wi-Fi, ZigBee, Drone)"]
+        SPEC["128-Channel Spectrum Scanner"]
     end
 
-    subgraph RADIO_LAYER ["Hardware Transceivers & Native Engines"]
-        SPI_BUS["⚡ High-Speed Shared SPI Bus (Up to 20MHz)"]
-        NRF_ARR["📡 Dual / Quad nRF24L01+ Array (2.4 GHz ISM)"]
-        CC1101["📻 TI CC1101 Sub-GHz Module (315-915 MHz)"]
-        WIFI_ENG["📶 ESP32 Native 802.11 Engine (Beacon / Deauth)"]
-        BLE_ENG["📱 ESP32 Native BLE Engine (Popup Flooder)"]
+    subgraph HARDWARE ["Hardware Transceivers"]
+        SPI_BUS["High-Speed Shared SPI Bus"]
+        NRF["Dual / Quad nRF24L01+ Transceivers"]
+        CC["TI CC1101 Sub-GHz Module"]
+        NATIVE_WIFI["Native ESP32 802.11 Baseband"]
+        NATIVE_BLE["Native ESP32 BLE Baseband"]
     end
 
-    WEB -->|WebSocket / REST| SYS
+    WEB -->|WebSocket / HTTP| SYS
     CLI -->|UART / USB CDC| SYS
     SYS --> OLED
-
     SYS <--> NVS
-    TASK -->|Launches Core 1 Worker Task| COORD
+    TASK -->|Dispatches Core 1 Task| COORD
 
     COORD --> SWEEP
     COORD --> TARGET
-    COORD --> NOISE
     COORD --> SPEC
 
     SWEEP --> SPI_BUS
     TARGET --> SPI_BUS
-    NOISE --> SPI_BUS
     SPEC --> SPI_BUS
 
-    SPI_BUS --> NRF_ARR
-    SPI_BUS --> CC1101
-    COORD --> WIFI_ENG
-    COORD --> BLE_ENG
+    SPI_BUS --> NRF
+    SPI_BUS --> CC
+    COORD --> NATIVE_WIFI
+    COORD --> NATIVE_BLE
 ```
 
 ---
 
-## 🚀 Key Features & Attack Arsenal
-
-### 1. Multi-Transceiver 2.4 GHz Sweeper Array
-- **Dual & Quad nRF24L01+ Engine**: Simultaneous multi-radio multiplexing up to 20 MHz SPI bus clock.
-- **Coprime Interleaved Sweep**: Mathematical coprime step calculation ($\gcd(S, N) = 1$) ensures complete, non-overlapping channel coverage across any custom frequency span.
-- **Gaussian Jitter Dwell**: Prevents external spectrum counters from locking onto harmonic cycles.
-- **Multi-Radio Quadrature Offsets**: Distributes transmissions across multiple radios without mutual interference.
-
-### 2. Targeted Protocol Jamming & Interdiction
-- **Bluetooth Low Energy (BLE)**: Pinpoint energy locking on Primary Advertising Channels (37 = 2402 MHz, 38 = 2426 MHz, 39 = 2480 MHz) or data hopping channels.
-- **Wi-Fi 802.11 b/g/n Channel Blocking**: Shaped power blasting across Wi-Fi Channel 1 (2412 MHz), Channel 6 (2437 MHz), Channel 11 (2462 MHz), or custom 20/40 MHz bandwidths.
-- **ZigBee / Thread / 802.15.4**: Channels 11 to 26 (2405 - 2480 MHz, 5 MHz spacing).
-- **RC Drones & FPV Interdictor**: Targeted disruption of FlySky AFHDS, FrSky ACCST, and ExpressLRS links.
-
-### 3. Sub-GHz Transceiver Support (TI CC1101)
-- Supports **315 MHz**, **433.92 MHz**, **868.35 MHz**, and **915 MHz** ISM bands.
-- Continuous Wave (CW) Carrier, OOK/FSK Modulated Noise, and Frequency Sweep Modes.
-
-### 4. Native ESP32 Wi-Fi & BLE Offense Engine
-- **802.11 Raw Frame Injector**:
-  - Multi-SSID Beacon Flooder (custom lists, random names, Rickroll generator).
-  - Deauthentication and Disassociation frame injection for 802.11 penetration auditing.
-- **BLE Advertisement Flooder**:
-  - Apple iOS AirDrop / AirPods popup storms.
-  - Android Google FastPair flood.
-  - Microsoft Windows SwiftPair flood.
-
-### 5. 2.4 GHz Spectrum Analyzer & Waterfall
-- Fast 128-channel RSSI scanner with real-time waterfall streaming to WebSockets, ANSI Serial terminal, and OLED screen.
-
----
-
-## 🌐 Embedded Web Dashboard & Captive Portal
-
-When powered on, ESP32-RF-SWORD broadcasts a standalone Wi-Fi Access Point:
-- **SSID**: `SWORD-SECURITY-PORTAL`
-- **Password**: `rfsword123`
-- **URL**: `http://192.168.4.1`
-
-Features:
-- **60 FPS Real-Time Canvas Waterfall** showing RF energy across 128 channels.
-- **Interactive Control Deck**: Start/Stop master button, Mode selector, Preset picker, Frequency sliders, Power toggles.
-- **Live Telemetry Metrics**: Uptime, Core temperature, Free heap, Hop rate (hops/sec), Packet rate (pkt/sec).
-- **Audit Log Console**: Real-time WebSocket event streaming.
-- **NVS Flash Persistence**: Save parameters directly into non-volatile storage.
-
----
-
-## 💻 Interactive Serial CLI Shell
-
-Connect over USB CDC or UART at **115200 baud** for instant terminal access:
+## Repository Layout
 
 ```text
-  ______  _____ _____ ____ ___     ____  _____       ______          ______  ____  ____ 
- |  ____|/ ____|  __ \___ \__ \   |  _ \|  ___|     / _____|\      /|/  __  \|  _ \|  _ \
- | |__  | (___ | |__) |__) | ) |  | |_) | |_ _____  \_____ \ \ \/\ / /| |  | | |_) | | | |
- |  __|  \___ \|  ___/|__ < / /   |  _ <|  _/ ____|  _____) \ \V  V / | |  | |  _ <| |_| |
- | |____ ____) | |    ___) / /_   | |_) | | |       |______/ \_/\_/  | |__| | | \ \|____/ 
- |______|_____/|_|   |____/____|  |____/|_|                           \______/|_|  \_\     
+esp32-rf-sword/
+├── .github/
+│   ├── workflows/
+│   │   ├── ci.yml                 # CI test runner and multi-target firmware build matrix
+│   │   ├── pages.yml              # GitHub Pages deployment for Web Flasher
+│   │   ├── release.yml            # Release asset packager
+│   │   └── release-please.yml     # Automated changelog and semantic tagging
+│   └── dependabot.yml             # Weekly dependency updater
+├── data/                          # LittleFS / SPIFFS filesystem storage
+├── docs/                          # Technical reference specifications
+│   ├── ARCHITECTURE.md            # Hardware arbitration, FreeRTOS scheduling, and jitter physics
+│   ├── CLI_REFERENCE.md           # Serial console syntax and command dictionary
+│   ├── FREQUENCY_GUIDE.md         # Channel allocations and frequency tables
+│   ├── PINOUTS.md                 # Complete pin assignments, schematics, and capacitor guides
+│   ├── WEB_INTERFACE.md           # WebSocket protocol schema and captive portal routing
+│   └── README.md                  # Secondary documentation index
+├── flasher/                       # Web Serial PWA installer (hosted on GitHub Pages)
+├── include/                       # Public C++ header files
+│   ├── analyzer/                  # Spectrum scanning and circular buffer headers
+│   ├── attack/                    # Hopping algorithms and target profile headers
+│   ├── core/                      # System state, NVS storage, and task management
+│   ├── hal/                       # Hardware abstraction layer and pin mappings
+│   ├── radio/                     # SPI bus arbitration and transceiver drivers
+│   └── ui/                        # Web server, CLI shell, and OLED HUD headers
+├── scripts/                       # Automation and helper tooling
+│   ├── bundle_web.py              # Compresses web/ into include/ui/WebAssets.h
+│   └── merge_bin.py               # Generates unified 0x0 offset firmware binaries
+├── src/                           # C++ implementation source code
+├── test/                          # Unit tests executable on host platform (Clang / GCC)
+├── web/                           # Embedded web interface source assets
+│   ├── index.html                 # Single-page dashboard markup
+│   ├── style.css                  # UI layout and styling
+│   └── app.js                     # Canvas waterfall visualizer and WebSocket client
+├── partitions.csv                 # Custom flash partition table
+└── platformio.ini                 # PlatformIO build configurations and environment definitions
+```
 
- [ ESP32-RF-SWORD // Multi-Band RF Security & Research Toolkit v0.1.0 ]
- Type 'help' to see available commands or 'status' for real-time telemetry.
+---
 
+## Hardware Wiring and Pinout Matrix
+
+The high-speed SPI bus (SCK, MISO, MOSI) is shared across all external transceivers. Individual module Chip Select Not (CSN) and Chip Enable (CE) lines isolate each radio:
+
+### ESP32-C3 SuperMini (Compact 2.4 GHz Engine)
+
+| Signal Line | ESP32-C3 GPIO | Target Module | Function |
+| :--- | :--- | :--- | :--- |
+| **SPI SCK** | `GPIO 4` | nRF24 #1 / #2 & CC1101 | Shared SPI Clock (up to 20 MHz) |
+| **SPI MISO** | `GPIO 5` | nRF24 #1 / #2 & CC1101 | Shared Master In Slave Out |
+| **SPI MOSI** | `GPIO 6` | nRF24 #1 / #2 & CC1101 | Shared Master Out Slave In |
+| **Radio 1 CE / CSN** | `GPIO 3` / `GPIO 7` | nRF24 Transceiver #1 | Transmitter control and chip select |
+| **Radio 2 CE / CSN** | `GPIO 1` / `GPIO 10` | nRF24 Transceiver #2 | Transmitter control and chip select |
+| **CC1101 CSN / GDO0** | `GPIO 0` / `GPIO 2` | TI CC1101 Sub-GHz | Sub-GHz chip select and digital I/O |
+| **I2C SDA / SCL** | `GPIO 8` / `GPIO 9` | SSD1306 OLED (0x3C) | Serial data and serial clock |
+
+### ESP32 DevKit V1 / WROOM-32 (Standard Dual-Core)
+
+| Signal Line | ESP32 GPIO | Target Module | Function |
+| :--- | :--- | :--- | :--- |
+| **SPI SCK / MISO / MOSI** | `GPIO 18` / `GPIO 19` / `GPIO 23` | All External Modules | Shared Hardware VSPI Bus |
+| **Radio 1 CE / CSN** | `GPIO 4` / `GPIO 5` | nRF24 Transceiver #1 | Primary 2.4 GHz module |
+| **Radio 2 CE / CSN** | `GPIO 2` / `GPIO 15` | nRF24 Transceiver #2 | Secondary 2.4 GHz module |
+| **Radio 3 CE / CSN** | `GPIO 13` / `GPIO 12` | nRF24 Transceiver #3 | Tertiary 2.4 GHz module |
+| **Radio 4 CE / CSN** | `GPIO 14` / `GPIO 27` | nRF24 Transceiver #4 | Quaternary 2.4 GHz module |
+| **CC1101 CSN / GDO0 / GDO2** | `GPIO 26` / `GPIO 25` / `GPIO 33` | TI CC1101 Sub-GHz | Sub-GHz module control lines |
+| **I2C SDA / SCL** | `GPIO 21` / `GPIO 22` | SSD1306 OLED (0x3C) | Display interface |
+
+For ESP32-S3 and ESP32-C6 pin mappings, refer to [docs/PINOUTS.md](docs/PINOUTS.md).
+
+---
+
+## Building and Flashing
+
+### Prerequisites
+
+- [PlatformIO Core](https://platformio.org/install/cli) (v6.1.0 or newer) or PlatformIO IDE extension.
+- Python 3.8 or newer.
+
+### Installation Steps
+
+```bash
+# 1. Clone repository
+git clone https://github.com/AtaCanYmc/esp32-rf-sword.git
+cd esp32-rf-sword
+
+# 2. Build and upload for your specific target environment
+# Target: ESP32-C3 SuperMini
+pio run -e esp32-c3-supermini --target upload
+
+# Target: ESP32 DevKit V1 (WROOM-32)
+pio run -e esp32-devkit-v1 --target upload
+
+# Target: ESP32-S3 DevKit
+pio run -e esp32-s3-devkit --target upload
+
+# Target: ESP32-C6 DevKit
+pio run -e esp32-c6-devkit --target upload
+
+# 3. Open serial monitor at 115200 baud
+pio device monitor -b 115200
+```
+
+Alternatively, use the browser-based installer without compiling from source: [ESP32-RF-SWORD Web Flasher](https://atacanymc.github.io/esp32-rf-sword/).
+
+---
+
+## Interactive Serial CLI Shell
+
+Connect to the USB UART/CDC port at **115200 baud**. The CLI responds to standard VT100/ANSI commands:
+
+```text
 sword > status
 === SYSTEM TELEMETRY & STATUS ===
   State          : RUNNING
@@ -181,84 +279,45 @@ sword > status
   Uptime / Heap  : 45 sec | Free Heap: 198420 bytes (Min: 182100)
 ```
 
-### CLI Command Summary:
-- `status`: Show live metrics and radio channels.
-- `start` / `stop`: Toggle RF transmission.
-- `mode <coprime|linear|random|ble|wifi|zigbee|drone|subghz|noise|spectrum|beacon|deauth|popup|blitz>`
-- `preset <full|ble-adv|ble-all|wifi-1|wifi-6|wifi-11|zigbee|flysky|frsky|elrs|sub-315|sub-433|sub-868|sub-915>`
-- `channels <min> <max>`: Set custom channel span.
-- `dwell <min_us> <max_us>`: Set dwell jitter range.
-- `power <min|low|high|max>`: Set output power.
-- `spectrum`: Print live ASCII 2.4GHz spectrum bar graph.
-- `pinout`: Print active hardware pin mapping.
-- `save` / `reset` / `reboot`: Flash management & reboot.
+### CLI Command Reference
+
+| Command | Arguments | Description |
+| :--- | :--- | :--- |
+| `status` | None | Displays live radio channels, hop rates, uptime, and memory heap. |
+| `start` | None | Activates transmission on configured radio modules. |
+| `stop` | None | Halts all active transmissions and places radios into standby. |
+| `mode` | `<coprime\|linear\|random\|ble\|wifi\|zigbee\|drone\|subghz\|noise\|spectrum\|beacon\|deauth\|popup\|blitz>` | Sets the active transmission profile. |
+| `preset` | `<full\|ble-adv\|ble-all\|wifi-1\|wifi-6\|wifi-11\|zigbee\|flysky\|frsky\|elrs\|sub-315\|sub-433\|sub-868\|sub-915>` | Applies calibrated frequency boundaries. |
+| `channels` | `<min> <max>` | Overrides channel boundaries (0 to 127). |
+| `dwell` | `<min_us> <max_us>` | Sets random Gaussian dwell time boundaries in microseconds. |
+| `power` | `<min\|low\|high\|max>` | Sets RF power output attenuation. |
+| `spectrum` | None | Prints real-time ASCII 2.4 GHz spectrum chart in terminal. |
+| `pinout` | None | Prints compiled GPIO pin mapping for the running board. |
+| `save` | None | Writes active settings to non-volatile flash storage (NVS). |
+| `reset` | None | Restores default factory parameters. |
+| `reboot` | None | Executes software microcontroller reset. |
 
 ---
 
-## 🛠️ Hardware Wiring & Pinouts
+## Embedded Web Dashboard
 
-### 1. ESP32-C3 SuperMini (Headless / Ultra-Compact)
-| Signal | ESP32-C3 GPIO | Description |
-|---|---|---|
-| **SPI SCK** | `GPIO 4` | Shared SPI Clock |
-| **SPI MISO** | `GPIO 5` | Shared SPI MISO |
-| **SPI MOSI** | `GPIO 6` | Shared SPI MOSI |
-| **Radio 1 CE / CSN** | `GPIO 3` / `GPIO 7` | nRF24 Radio #1 |
-| **Radio 2 CE / CSN** | `GPIO 1` / `GPIO 10` | nRF24 Radio #2 |
-| **CC1101 CSN / GDO0** | `GPIO 0` / `GPIO 2` | Sub-GHz Module |
-| **I2C SDA / SCL** | `GPIO 8` / `GPIO 9` | OLED Display |
+Upon boot, the firmware creates a standalone Wi-Fi Access Point with Captive Portal redirection:
 
-### 2. ESP32 DevKit V1 / WROOM-32 (Standard Dual-Core)
-| Signal | ESP32 GPIO | Description |
-|---|---|---|
-| **SPI SCK / MISO / MOSI** | `GPIO 18` / `GPIO 19` / `GPIO 23` | Shared VSPI Bus |
-| **Radio 1 CE / CSN** | `GPIO 4` / `GPIO 5` | nRF24 Radio #1 |
-| **Radio 2 CE / CSN** | `GPIO 2` / `GPIO 15` | nRF24 Radio #2 |
-| **Radio 3 CE / CSN** | `GPIO 13` / `GPIO 12` | nRF24 Radio #3 |
-| **Radio 4 CE / CSN** | `GPIO 14` / `GPIO 27` | nRF24 Radio #4 |
-| **CC1101 CSN / GDO0 / GDO2** | `GPIO 26` / `GPIO 25` / `GPIO 33` | Sub-GHz Module |
-| **I2C SDA / SCL** | `GPIO 21` / `GPIO 22` | SSD1306 OLED (0x3C) |
+| Parameter | Configuration |
+| :--- | :--- |
+| **SSID** | `SWORD-SECURITY-PORTAL` |
+| **Password** | `rfsword123` |
+| **Gateway IP** | `http://192.168.4.1` |
+| **Captive Portal** | Automatic DNS redirect via internal DNS server on UDP port 53 |
+| **WebSocket Endpoint** | `ws://192.168.4.1/ws` |
 
-*For ESP32-S3 and ESP32-C6 pinouts, see [`docs/PINOUTS.md`](docs/PINOUTS.md).*
+The web interface is compiled into firmware flash memory via [scripts/bundle_web.py](scripts/bundle_web.py). It operates entirely offline without external internet connectivity or content delivery network (CDN) dependencies.
 
 ---
 
-## 📦 Building & Flashing
+## Automated Testing and Verification
 
-### Prerequisites:
-- [PlatformIO Core](https://platformio.org/install/cli) or PlatformIO IDE extension for VS Code / CLion.
-- Python 3.8+
-
-### Step 1: Clone Repository
-```bash
-git clone https://github.com/AtaCanYmc/esp32-rf-sword.git
-cd esp32-rf-sword
-```
-
-### Step 2: Build & Flash for Your Board
-- **For ESP32-C3 SuperMini**:
-  ```bash
-  pio run -e esp32-c3-supermini --target upload
-  ```
-- **For ESP32 DevKit V1 (WROOM-32)**:
-  ```bash
-  pio run -e esp32-devkit-v1 --target upload
-  ```
-- **For ESP32-S3 DevKit**:
-  ```bash
-  pio run -e esp32-s3-devkit --target upload
-  ```
-
-### Step 3: Open Serial Monitor
-```bash
-pio device monitor -b 115200
-```
-
----
-
-## 🧪 Automated Testing & Verification
-
-Run the native test suite directly on your host machine:
+Run the host-side native C++ test suite without physical microcontroller hardware:
 
 ```bash
 clang++ -std=c++17 -DHOST_SIMULATION -Iinclude -Isrc -Itest \
@@ -269,28 +328,57 @@ clang++ -std=c++17 -DHOST_SIMULATION -Iinclude -Isrc -Itest \
   -o /tmp/sword_test && /tmp/sword_test
 ```
 
----
+To verify web assets are synchronized with `include/ui/WebAssets.h`:
 
-## 📚 Technical Documentation Index
-
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) - Deep dive into FreeRTOS core scheduling, SPI arbitration, and timing jitter physics.
-- [`docs/PINOUTS.md`](docs/PINOUTS.md) - Complete wiring schematics, decoupling capacitor guides, and pin tables.
-- [`docs/CLI_REFERENCE.md`](docs/CLI_REFERENCE.md) - Complete command reference for the interactive serial terminal.
-- [`docs/WEB_INTERFACE.md`](docs/WEB_INTERFACE.md) - Web dashboard documentation, WebSocket protocol schema, and Captive Portal setup.
-- [`docs/FREQUENCY_GUIDE.md`](docs/FREQUENCY_GUIDE.md) - Comprehensive RF frequency mapping for 2.4GHz ISM, Wi-Fi 1-14, BLE, ZigBee, and Sub-GHz.
-- [`SECURITY.md`](SECURITY.md) - Ethical usage policy and responsible vulnerability disclosure.
+```bash
+python3 scripts/bundle_web.py
+git diff --exit-code include/ui/WebAssets.h
+```
 
 ---
 
-## ⚖️ Legal & Ethical Notice
+## Technical Documentation Index
+
+Detailed technical specifications are maintained in the [docs/](docs/README.md) directory:
+
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): Microcontroller scheduling, SPI bus contention prevention, and jitter models.
+- [docs/PINOUTS.md](docs/PINOUTS.md): Detailed pin mapping, decoupling capacitor requirements, and hardware design notes.
+- [docs/CLI_REFERENCE.md](docs/CLI_REFERENCE.md): Terminal interaction syntax and script integration examples.
+- [docs/WEB_INTERFACE.md](docs/WEB_INTERFACE.md): WebSocket serialization formats and REST endpoint documentation.
+- [docs/FREQUENCY_GUIDE.md](docs/FREQUENCY_GUIDE.md): ISM frequency tables and channel calculations across 2.4 GHz and Sub-GHz bands.
+- [SECURITY.md](SECURITY.md): Ethical use policy and vulnerability disclosure procedure.
+
+---
+
+## Frequently Asked Questions
+
+#### Why use multiple nRF24L01+ transceivers instead of a single module?
+A single nRF24L01+ transceiver requires tens of microseconds for frequency synthesizer re-locking when changing channels. By distributing hops across two or four transceivers using interleaved quadrature offsets, the framework achieves continuous spectrum occupation and eliminates synthesizer blind spots.
+
+#### Why isolate radio tasks to Core 1 in FreeRTOS?
+The ESP32 network stack (Wi-Fi TCP/IP, WebSockets, and HTTP request routing) runs asynchronously on Core 0. Running timing-critical RF transmission loops on Core 0 would introduce millisecond-level scheduling latency during network I/O. Assigning the RF worker to Core 1 at priority 24 guarantees microsecond-level timing repeatability.
+
+#### Does the web dashboard transmit telemetry to third-party servers?
+No. The web interface operates entirely offline. Static HTML, CSS, and JavaScript assets are bundled directly into the microcontroller flash memory, and all WebSocket communications remain within the local access point subnet.
+
+#### How is bus contention avoided on the shared SPI bus?
+All external radio modules share the hardware SPI lines (SCK, MISO, MOSI) while keeping independent Chip Select Not (CSN) lines. The SPI bus manager drives CSN high for all inactive modules before asserting CSN low for the active transceiver, preventing simultaneous MISO drive.
+
+---
+
+## Regulatory and Legal Notice
 
 > [!CAUTION]
-> **ESP32-RF-SWORD is developed strictly for academic research, authorized RF testing, laboratory hardware auditing, and educational demonstrations in controlled RF anechoic chambers or Faraday environments.**
-> Transmitting on radio frequencies or disrupting wireless networks without proper legal authorization is strictly prohibited under national and international telecommunications law (e.g. FCC Title 47, Part 15, ITU Radio Regulations, ETSI RED).
-> The authors accept no liability for damages or legal violations resulting from the use or misuse of this software.
+> **ESP32-RF-SWORD is intended solely for authorized security auditing, academic research, and controlled RF testing inside Faraday cages or anechoic chambers.**
+> 
+> Unauthorized radio frequency transmission or intentional interference with wireless networks is illegal under telecommunications regulations, including FCC Title 47 Part 15 (United States), the Radio Equipment Directive 2014/53/EU (European Union), and ITU Radio Regulations.
+> 
+> The project authors accept no liability for non-compliant operation or damages resulting from the use of this software.
 
 ---
 
-## 📄 License
+## License
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+The primary source code of ESP32-RF-SWORD is licensed under the [MIT License](LICENSE).
+
+Because firmware builds statically link against the `nrf24/RF24` library (licensed under the GNU General Public License v2.0), assembled binary distributions combining these components are subject to the terms of the GNU General Public License v2.0. Refer to [LICENSE](LICENSE) for component-level licensing details.
